@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --button-success: #10b981;
+            --button-success-hover: #059669;
+            --button-info: #3b82f6;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --button-success: #34d399;
+            --button-success-hover: #10b981;
+            --button-info: #60a5fa;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s ease;
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: var(--error-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= PAGE HEADER ============= */
+        .page-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            animation: slideDown 0.8s ease;
+            position: relative;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            animation: fadeIn 0.8s ease 0.3s both;
+            position: relative;
+        }
+
+        /* ============= БЛОГ СЕКЦИЯСЫ ============= */
+        .blog-section {
+            padding: 60px 0;
+        }
+
+        /* ============= ІЗДЕУ ЖӘНЕ КАТЕГОРИЯЛАР ============= */
+        .blog-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .blog-search {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .blog-search i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .blog-search input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border: 2px solid var(--input-border);
+            border-radius: 40px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .blog-search input:focus {
+            border-color: var(--button-primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.1);
+        }
+
+        .blog-categories {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .category-btn:hover {
+            border-color: var(--button-primary);
+            color: var(--button-primary);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+        }
+
+        /* ============= БЛОК БӨЛІМДЕРІ ============= */
+        .blog-block {
+            margin-bottom: 60px;
+        }
+
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .block-header h2 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .block-header h2 i {
+            color: var(--button-primary);
+        }
+
+        .view-all {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .view-all:hover {
+            gap: 12px;
+            color: var(--button-primary-hover);
+        }
+
+        /* ============= БЛОГ ГРИД ============= */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .blog-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            animation: scaleIn 0.6s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--button-primary);
+        }
+
+        .blog-image {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .blog-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s;
+        }
+
+        .blog-card:hover .blog-image img {
+            transform: scale(1.1);
+        }
+
+        .blog-category-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .blog-content {
+            padding: 24px;
+        }
+
+        .blog-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .blog-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .blog-meta i {
+            color: var(--button-primary);
+        }
+
+        .blog-title {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .blog-excerpt {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .blog-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .read-more {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .read-more:hover {
+            gap: 12px;
+            color: var(--button-primary-hover);
+        }
+
+        .blog-stats {
+            display: flex;
+            gap: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .blog-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ============= ТРЕНДТІ МАҚАЛАЛАР ============= */
+        .trending-section {
+            margin: 60px 0;
+            padding: 40px 0;
+            background: var(--bg-secondary);
+            border-radius: 40px;
+        }
+
+        .trending-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .trending-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .trending-card:hover {
+            transform: translateX(10px);
+            border-color: var(--button-primary);
+        }
+
+        .trending-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .trending-content {
+            flex: 1;
+        }
+
+        .trending-content h4 {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .trending-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ==================== МАҚАЛАЛАР ============= */
+        .featured-post {
+            background: var(--card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            animation: scaleIn 0.6s ease;
+        }
+
+        .featured-image {
+            height: 100%;
+            min-height: 400px;
+            overflow: hidden;
+        }
+
+        .featured-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s;
+        }
+
+        .featured-post:hover .featured-image img {
+            transform: scale(1.05);
+        }
+
+        .featured-content {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .featured-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+
+        .featured-content h3 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .featured-content p {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .featured-meta {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+            color: var(--text-muted);
+        }
+
+        /* ============= ЖАЗЫЛУ ============= */
+        .newsletter {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 40px;
+            padding: 60px;
+            text-align: center;
+            color: white;
+            margin: 60px 0;
+        }
+
+        .newsletter h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .newsletter p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .newsletter-form {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+        }
+
+        .newsletter-form input:focus {
+            outline: none;
+        }
+
+        .newsletter-form button {
+            padding: 16px 30px;
+            background: white;
+            color: #6366f1;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .newsletter-form button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* ============= МОДАЛЬДЫ ТЕРЕЗЕ ============= */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            border-radius: 40px;
+            max-width: 900px;
+            width: 100%;
+            margin: auto;
+            position: relative;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            transform: rotate(180deg);
+            background: #dc2626;
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 400px;
+            border-radius: 30px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-title {
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 30px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-text {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .modal-text p {
+            margin-bottom: 20px;
+        }
+
+        .modal-text h4 {
+            color: var(--text-primary);
+            margin: 30px 0 15px;
+            font-size: 1.4rem;
+        }
+
+        .modal-text ul, .modal-text ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .modal-text li {
+            margin-bottom: 10px;
+        }
+
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--footer-text);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--button-primary);
+        }
+
+        .footer p {
+            opacity: 0.8;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s;
+            border-left: 4px solid var(--success-color);
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ============= МЕДИА ============= */
+        @media (max-width: 768px) {
+            .menu-panel { width: 100%; right: -100%; }
+            .page-header h1 { font-size: 2.2rem; }
+            .blog-toolbar { flex-direction: column; align-items: stretch; }
+            .blog-search { max-width: 100%; }
+            .featured-post { grid-template-columns: 1fr; }
+            .featured-image { min-height: 250px; }
+            .featured-content { padding: 30px; }
+            .newsletter { padding: 40px 20px; }
+            .newsletter-form { flex-direction: column; }
+            .modal-body { padding: 30px; }
+            .modal-image { height: 250px; }
+            .modal-title { font-size: 1.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 { font-size: 1.4rem; }
+            .page-header h1 { font-size: 1.8rem; }
+            .blog-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            <div class="burger-icon" id="burgerIcon" onclick="AIFunctions.toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="AIFunctions.closeMenu()"></div>
+
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="AIFunctions.closeMenu()"><i class="fas fa-times"></i></div>
+        </div>
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> <span class="lang-text" data-key="about">Біз туралы</span></a></li>
+            <li><a href="blog.html" class="active"><i class="fas fa-blog"></i> <span class="lang-text" data-key="blog">Блог</span></a></li>
+            <li><a href="contact.html"><i class="fas fa-address-book"></i> <span class="lang-text" data-key="contact">Байланыс</span></a></li>
+            <li><a href="menu.html"><i class="fas fa-utensils"></i> <span class="lang-text" data-key="menu">Мәзір</span></a></li>
+            <li><a href="calories.html"><i class="fas fa-fire"></i> <span class="lang-text" data-key="calories">Калория</span></a></li>
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> <span class="lang-text" data-key="dashboard">Бақылау</span></a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> <span class="lang-text" data-key="profile">Профиль</span></a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+        </ul>
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('en')">EN</button>
+            </div>
+        </div>
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="AIFunctions.toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i> <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <section class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-blog"></i> <span class="lang-text" data-key="blog">Блог</span></h1>
+            <p class="lang-text" data-key="blog-slogan">Денсаулықты тамақтану туралы пайдалы мақалалар</p>
+        </div>
+    </section>
+
+    <section class="blog-section">
+        <div class="container">
+            <!-- Іздеу және категориялар -->
+            <div class="blog-toolbar">
+                <div class="blog-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="lang-placeholder" data-key="search" placeholder="Мақала іздеу...">
+                </div>
+                <div class="blog-categories">
+                    <button class="category-btn active" data-category="all"><span class="lang-text" data-key="all">Барлығы</span></button>
+                    <button class="category-btn" data-category="Тамақтану"><span class="lang-text" data-key="category-nutrition">Тамақтану</span></button>
+                    <button class="category-btn" data-category="Рецептер"><span class="lang-text" data-key="category-recipes">Рецептер</span></button>
+                    <button class="category-btn" data-category="Кеңестер"><span class="lang-text" data-key="category-tips">Кеңестер</span></button>
+                    <button class="category-btn" data-category="Денсаулық"><span class="lang-text" data-key="category-health">Денсаулық</span></button>
+                    <button class="category-btn" data-category="Диета"><span class="lang-text" data-key="category-diet">Диета</span></button>
+                </div>
+            </div>
+
+            <!-- Басты мақала (Featured) -->
+            <div class="featured-post">
+                <div class="featured-image">
+                    <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800" alt="Дұрыс тамақтану">
+                </div>
+                <div class="featured-content">
+                    <span class="featured-badge"><span class="lang-text" data-key="featured">Таңдаулы</span></span>
+                    <h3 class="blog-title" data-key="featured-title">Дұрыс тамақтану негіздері</h3>
+                    <p class="blog-excerpt" data-key="featured-excerpt">Дұрыс тамақтанудың 10 алтын ережесі. Қалай денсаулықты сақтауға болады? Барлық жауаптар осы мақалада.</p>
+                    <div class="featured-meta">
+                        <span><i class="far fa-calendar"></i> 15 Қаңтар 2026</span>
+                        <span><i class="far fa-eye"></i> 1.2k оқырман</span>
+                    </div>
+                    <a class="read-more" onclick="AIFunctions.openArticle('featured')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Соңғы мақалалар -->
+            <div class="blog-block">
+                <div class="block-header">
+                    <h2><i class="fas fa-clock"></i> <span class="lang-text" data-key="latest">Соңғы мақалалар</span></h2>
+                    <a href="#" class="view-all"><span class="lang-text" data-key="view-all">Барлығын көру</span> <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="blog-grid">
+                    <!-- Мақала 1 -->
+                    <div class="blog-card" data-id="article1">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1493770348161-369560ae357d?w=600" alt="Таңғы ас">
+                            <span class="blog-category-badge" data-key="category-nutrition">Тамақтану</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 15 Қаңтар 2026</span>
+                                <span><i class="far fa-eye"></i> 1245</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article1-title">Дұрыс тамақтану негіздері</h3>
+                            <p class="blog-excerpt" data-key="article1-excerpt">Дұрыс тамақтанудың 10 алтын ережесі. Қалай денсаулықты сақтауға болады?</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article1')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 45</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Мақала 2 -->
+                    <div class="blog-card" data-id="article2">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600" alt="Таңғы ас">
+                            <span class="blog-category-badge" data-key="category-recipes">Рецептер</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 10 Қаңтар 2026</span>
+                                <span><i class="far fa-eye"></i> 982</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article2-title">5 пайдалы таңғы ас</h3>
+                            <p class="blog-excerpt" data-key="article2-excerpt">Тез әрі пайдалы таңғы ас рецептері. 15 минутта дайын!</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article2')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 32</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Мақала 3 -->
+                    <div class="blog-card" data-id="article3">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1543362906-acfc16c67564?w=600" alt="Су">
+                            <span class="blog-category-badge" data-key="category-tips">Кеңестер</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 5 Қаңтар 2026</span>
+                                <span><i class="far fa-eye"></i> 756</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article3-title">Судың маңызы</h3>
+                            <p class="blog-excerpt" data-key="article3-excerpt">Неге күніне 2 литр су ішу керек? Судың пайдасы туралы 5 факт.</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article3')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 28</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Танымал мақалалар (Trending) -->
+            <div class="trending-section">
+                <div class="container">
+                    <h2 style="text-align: center; margin-bottom: 30px;"><i class="fas fa-fire"></i> <span class="lang-text" data-key="trending">Танымал мақалалар</span></h2>
+                    
+                    <div class="trending-grid">
+                        <div class="trending-card" onclick="AIFunctions.openArticle('trending1')">
+                            <div class="trending-number">1</div>
+                            <div class="trending-content">
+                                <h4 data-key="trending1-title">Салмақ жоғалтуға арналған диета</h4>
+                                <p><i class="far fa-eye"></i> <span data-key="trending1-views">1.5k оқырман</span></p>
+                            </div>
+                        </div>
+                        <div class="trending-card" onclick="AIFunctions.openArticle('trending2')">
+                            <div class="trending-number">2</div>
+                            <div class="trending-content">
+                                <h4 data-key="trending2-title">Спорт және тамақтану</h4>
+                                <p><i class="far fa-eye"></i> <span data-key="trending2-views">1.2k оқырман</span></p>
+                            </div>
+                        </div>
+                        <div class="trending-card" onclick="AIFunctions.openArticle('trending3')">
+                            <div class="trending-number">3</div>
+                            <div class="trending-content">
+                                <h4 data-key="trending3-title">Суперфудтар тізімі</h4>
+                                <p><i class="far fa-eye"></i> <span data-key="trending3-views">892 оқырман</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Келесі мақалалар блогы -->
+            <div class="blog-block">
+                <div class="blog-grid">
+                    <!-- Мақала 4 -->
+                    <div class="blog-card" data-id="article4">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600" alt="Салат">
+                            <span class="blog-category-badge" data-key="category-diet">Диета</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 1 Қаңтар 2026</span>
+                                <span><i class="far fa-eye"></i> 1543</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article4-title">Салмақ жоғалтуға арналған диета</h3>
+                            <p class="blog-excerpt" data-key="article4-excerpt">Аштықсыз салмақ жоғалтудың 7 құпиясы. Тиімді диета.</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article4')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 67</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Мақала 5 -->
+                    <div class="blog-card" data-id="article5">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600" alt="Спорт">
+                            <span class="blog-category-badge" data-key="category-sport">Спорт</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 28 Желтоқсан 2025</span>
+                                <span><i class="far fa-eye"></i> 621</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article5-title">Спорт және тамақтану</h3>
+                            <p class="blog-excerpt" data-key="article5-excerpt">Жаттығу алдында және кейін не жеу керек? Пайдалы кеңестер.</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article5')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 41</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Мақала 6 -->
+                    <div class="blog-card" data-id="article6">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600" alt="Суперфуд">
+                            <span class="blog-category-badge" data-key="category-health">Денсаулық</span>
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar"></i> 20 Желтоқсан 2025</span>
+                                <span><i class="far fa-eye"></i> 892</span>
+                            </div>
+                            <h3 class="blog-title" data-key="article6-title">Суперфудтар тізімі</h3>
+                            <p class="blog-excerpt" data-key="article6-excerpt">Денсаулыққа пайдалы 10 суперфуд. Чиа, киноа және т.б.</p>
+                            <div class="blog-footer">
+                                <a class="read-more" onclick="AIFunctions.openArticle('article6')"><span class="lang-text" data-key="read-more">Толығырақ</span> <i class="fas fa-arrow-right"></i></a>
+                                <div class="blog-stats">
+                                    <span><i class="far fa-heart"></i> 53</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Жазылу бөлімі -->
+            <div class="newsletter">
+                <h3 class="lang-text" data-key="newsletter-title">Жаңалықтарға жазылыңыз</h3>
+                <p class="lang-text" data-key="newsletter-text">Ең соңғы мақалаларды бірінші болып оқыңыз</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" class="lang-placeholder" data-key="newsletter-email" placeholder="Email енгізіңіз" required>
+                    <button type="submit"><span class="lang-text" data-key="subscribe">Жазылу</span></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальды терезе (мақаланың толық нұсқасы) -->
+    <div class="modal" id="articleModal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="AIFunctions.closeModal()">
+                <i class="fas fa-times"></i>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image" id="modalImage">
+                    <img src="" alt="Article image">
+                </div>
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <div class="modal-meta">
+                    <span id="modalDate"><i class="far fa-calendar"></i></span>
+                    <span id="modalViews"><i class="far fa-eye"></i></span>
+                    <span id="modalCategory"><i class="far fa-folder"></i></span>
+                </div>
+                <div class="modal-text" id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="about.html" class="lang-text" data-key="about">Біз туралы</a>
+                <a href="blog.html" class="lang-text" data-key="blog">Блог</a>
+                <a href="contact.html" class="lang-text" data-key="contact">Байланыс</a>
+                <a href="menu.html" class="lang-text" data-key="menu">Мәзір</a>
+                <a href="calories.html" class="lang-text" data-key="calories">Калория</a>
+                <a href="dashboard.html" class="lang-text" data-key="dashboard">Бақылау</a>
+                <a href="profile.html" class="lang-text" data-key="profile">Профиль</a>
+                <a href="login.html" class="lang-text" data-key="login">Кіру</a>
+                <a href="register.html" class="lang-text" data-key="register">Тіркелу</a>
+            </div>
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'about': 'Біз туралы',
+                'blog': 'Блог',
+                'contact': 'Байланыс',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'dashboard': 'Бақылау',
+                'profile': 'Профиль',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'blog-slogan': 'Денсаулықты тамақтану туралы пайдалы мақалалар',
+                'search': 'Мақала іздеу...',
+                'latest': 'Соңғы мақалалар',
+                'trending': 'Танымал мақалалар',
+                'all': 'Барлығы',
+                'featured': 'Таңдаулы',
+                'read-more': 'Толығырақ',
+                'view-all': 'Барлығын көру',
+                'subscribe': 'Жазылу',
+                
+                // Категориялар
+                'category-nutrition': 'Тамақтану',
+                'category-recipes': 'Рецептер',
+                'category-tips': 'Кеңестер',
+                'category-diet': 'Диета',
+                'category-sport': 'Спорт',
+                'category-health': 'Денсаулық',
+                
+                // Мақала атаулары
+                'featured-title': 'Дұрыс тамақтану негіздері',
+                'featured-excerpt': 'Дұрыс тамақтанудың 10 алтын ережесі. Қалай денсаулықты сақтауға болады? Барлық жауаптар осы мақалада.',
+                
+                'article1-title': 'Дұрыс тамақтану негіздері',
+                'article1-excerpt': 'Дұрыс тамақтанудың 10 алтын ережесі. Қалай денсаулықты сақтауға болады?',
+                
+                'article2-title': '5 пайдалы таңғы ас',
+                'article2-excerpt': 'Тез әрі пайдалы таңғы ас рецептері. 15 минутта дайын!',
+                
+                'article3-title': 'Судың маңызы',
+                'article3-excerpt': 'Неге күніне 2 литр су ішу керек? Судың пайдасы туралы 5 факт.',
+                
+                'article4-title': 'Салмақ жоғалтуға арналған диета',
+                'article4-excerpt': 'Аштықсыз салмақ жоғалтудың 7 құпиясы. Тиімді диета.',
+                
+                'article5-title': 'Спорт және тамақтану',
+                'article5-excerpt': 'Жаттығу алдында және кейін не жеу керек? Пайдалы кеңестер.',
+                
+                'article6-title': 'Суперфудтар тізімі',
+                'article6-excerpt': 'Денсаулыққа пайдалы 10 суперфуд. Чиа, киноа және т.б.',
+                
+                // Танымал мақалалар
+                'trending1-title': 'Салмақ жоғалтуға арналған диета',
+                'trending1-views': '1.5k оқырман',
+                'trending2-title': 'Спорт және тамақтану',
+                'trending2-views': '1.2k оқырман',
+                'trending3-title': 'Суперфудтар тізімі',
+                'trending3-views': '892 оқырман',
+                
+                // Мақаланың толық мәтіні
+                'featured-full': '<h4>Дұрыс тамақтанудың 10 алтын ережесі</h4><p>Дұрыс тамақтану - бұл денсаулықты сақтаудың негізгі факторларының бірі. Міне, сізге көмектесетін 10 маңызды ереже:</p><ol><li>Күніне 5-6 рет тамақтаныңыз (3 негізгі тағам + 2-3 жеңіл тамақ)</li><li>Күніне 2-3 литр су ішіңіз</li><li>Көкөністер мен жемістерді көп жеңіз</li><li>Ақуызды тағамдарды тұтыныңыз (ет, балық, жұмыртқа, бұршақ)</li><li>Тез дайындалатын тағамдардан бас тартыңыз</li><li>Тағамды жақсылап шайнаңыз</li><li>Соңғы тамақты ұйықтар алдында 2-3 сағат бұрын ішіңіз</li><li>Түрлі-түсті тағамдарды таңдаңыз</li><li>Қант пен тұзды азайтыңыз</li><li>Толық ұйықтаңыз (7-8 сағат)</li></ol>',
+                
+                'article1-full': '<h4>Дұрыс тамақтану дегеніміз не?</h4><p>Дұрыс тамақтану - бұл ағзаға қажетті барлық қоректік заттарды (ақуыздар, майлар, көмірсулар, витаминдер, минералдар) теңдестірілген мөлшерде алу.</p><h4>10 алтын ереже:</h4><ol><li>Таңғы асты міндетті түрде ішіңіз</li><li>Күніне 2-3 литр су ішіңіз</li><li>Майлы тағамдарды шектеңіз</li><li>Тәттіні азайтыңыз</li><li>Көкөністерді көп жеңіз</li><li>Ақуызды тағамдарды қосыңыз</li><li>Дәмдеуіштерді пайдаланыңыз</li><li>Тамақты баяу жеңіз</li><li>Түрлі тағамдарды жеңіз</li><li>Демалыс режимін сақтаңыз</li></ol>',
+                
+                'article2-full': '<h4>5 пайдалы таңғы ас идеясы</h4><ol><li><strong>Сұлы ботқасы</strong> - сүтпен немесе сумен, жидектер мен жаңғақтар қосып</li><li><strong>Омлет</strong> - 2 жұмыртқа, көкөністер, ірімшік</li><li><strong>Грек йогурты</strong> - бал, жаңғақтар, жидектермен</li><li><strong>Авокадо тосты</strong> - тұтас дәнді нан, авокадо, жұмыртқа</li><li><strong>Чиа пудингі</strong> - чиа тұқымдары, сүт, жидектер</li></ol><p>Барлық рецептер 15-20 минутта дайын!</p>',
+                
+                'article3-full': '<h4>Судың пайдасы</h4><ul><li><strong>Зат алмасуды жақсартады</strong> - сусыз ағзада зат алмасу баяулайды</li><li><strong>Теріні тазартады</strong> - су теріні ылғалдандырып, токсиндерді шығарады</li><li><strong>Энергия береді</strong> - сусыздық шаршау мен бас ауруын тудырады</li><li><strong>Салмақты бақылауға көмектеседі</strong> - су аштықты басады</li><li><strong>Ас қорытуды жақсартады</strong> - су тағамның сіңуіне көмектеседі</li></ul><p>Ересек адамға күніне орта есеппен 2-3 литр су қажет.</p>',
+                
+                'article4-full': '<h4>Салмақ жоғалтуға арналған диета</h4><p>Салмақ жоғалту үшін аштыққа салынудың қажеті жоқ. Міне тиімді әдістер:</p><ol><li><strong>Кішкене табақтарды пайдаланыңыз</strong> - бұл порцияны азайтуға көмектеседі</li><li><strong>Көкөністерді көп жеңіз</strong> - оларда калория аз, талшық көп</li><li><strong>Ақуызды көбірек тұтыныңыз</strong> - ақуыз ұзақ уақыт тоқтық сезімін береді</li><li><strong>Тәтті сусындардан бас тартыңыз</strong> - оларда бос калория көп</li><li><strong>Түнгі тамақтануды тоқтатыңыз</strong> - соңғы тамақ ұйықтар алдында 3 сағат бұрын</li></ol>',
+                
+                'article5-full': '<h4>Спорт және тамақтану</h4><p>Жаттығу алдында және кейін дұрыс тамақтану маңызды:</p><h4>Жаттығу АЛДЫНДА (1-2 сағат бұрын):</h4><ul><li>Күрделі көмірсулар (сұлы, қарақұмық, тұтас дәнді нан)</li><li>Аздап ақуыз (йогурт, жұмыртқа)</li><li>Суды көп ішіңіз</li></ul><h4>Жаттығу КЕЙІН (30-60 минуттан соң):</h4><ul><li>Ақуыз (тауық, балық, протеин коктейлі)</li><li>Көкөністер</li><li>Суды қалпына келтіріңіз</li></ul>',
+                
+                'article6-full': '<h4>ТОП-10 суперфуд</h4><ol><li><strong>Чиа тұқымдары</strong> - омега-3, талшық, кальций</li><li><strong>Киноа</strong> - толық ақуыз, темір, магний</li><li><strong>Годжи жидектері</strong> - антиоксиданттар, витамин С</li><li><strong>Ацерола</strong> - витамин С рекордшысы</li><li><strong>Спирулина</strong> - ақуыз, темір, витамин В12</li><li><strong>Какао</strong> - магний, антиоксиданттар</li><li><strong>Зімбір</strong> - қабынуға қарсы</li><li><strong>Куркума</strong> - күшті антиоксидант</li><li><strong>Жасыл шай</strong> - катехиндер, антиоксиданттар</li><li><strong>Грек жаңғағы</strong> - омега-3, ақуыз</li></ol>',
+                
+                'trending1-full': '<h4>Салмақ жоғалтуға арналған диета</h4><p>Салмақ жоғалту үшін аштыққа салынудың қажеті жоқ. Міне тиімді әдістер:</p><ol><li><strong>Кішкене табақтарды пайдаланыңыз</strong> - бұл порцияны азайтуға көмектеседі</li><li><strong>Көкөністерді көп жеңіз</strong> - оларда калория аз, талшық көп</li><li><strong>Ақуызды көбірек тұтыныңыз</strong> - ақуыз ұзақ уақыт тоқтық сезімін береді</li><li><strong>Тәтті сусындардан бас тартыңыз</strong> - оларда бос калория көп</li><li><strong>Түнгі тамақтануды тоқтатыңыз</strong> - соңғы тамақ ұйықтар алдында 3 сағат бұрын</li></ol>',
+                
+                'trending2-full': '<h4>Спорт және тамақтану</h4><p>Жаттығу алдында және кейін дұрыс тамақтану маңызды:</p><h4>Жаттығу АЛДЫНДА (1-2 сағат бұрын):</h4><ul><li>Күрделі көмірсулар (сұлы, қарақұмық, тұтас дәнді нан)</li><li>Аздап ақуыз (йогурт, жұмыртқа)</li><li>Суды көп ішіңіз</li></ul><h4>Жаттығу КЕЙІН (30-60 минуттан соң):</h4><ul><li>Ақуыз (тауық, балық, протеин коктейлі)</li><li>Көкөністер</li><li>Суды қалпына келтіріңіз</li></ul>',
+                
+                'trending3-full': '<h4>ТОП-10 суперфуд</h4><ol><li><strong>Чиа тұқымдары</strong> - омега-3, талшық, кальций</li><li><strong>Киноа</strong> - толық ақуыз, темір, магний</li><li><strong>Годжи жидектері</strong> - антиоксиданттар, витамин С</li><li><strong>Ацерола</strong> - витамин С рекордшысы</li><li><strong>Спирулина</strong> - ақуыз, темір, витамин В12</li><li><strong>Какао</strong> - магний, антиоксиданттар</li><li><strong>Зімбір</strong> - қабынуға қарсы</li><li><strong>Куркума</strong> - күшті антиоксидант</li><li><strong>Жасыл шай</strong> - катехиндер, антиоксиданттар</li><li><strong>Грек жаңғағы</strong> - омега-3, ақуыз</li></ol>',
+                
+                'newsletter-title': 'Жаңалықтарға жазылыңыз',
+                'newsletter-text': 'Ең соңғы мақалаларды бірінші болып оқыңыз',
+                'newsletter-email': 'Email енгізіңіз',
+                'copyright': 'Барлық құқықтар қорғалған.'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'about': 'О нас',
+                'blog': 'Блог',
+                'contact': 'Контакты',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'dashboard': 'Панель',
+                'profile': 'Профиль',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'blog-slogan': 'Полезные статьи о здоровом питании',
+                'search': 'Поиск статей...',
+                'latest': 'Последние статьи',
+                'trending': 'Популярные статьи',
+                'all': 'Все',
+                'featured': 'Избранное',
+                'read-more': 'Подробнее',
+                'view-all': 'Смотреть все',
+                'subscribe': 'Подписаться',
+                
+                'category-nutrition': 'Питание',
+                'category-recipes': 'Рецепты',
+                'category-tips': 'Советы',
+                'category-diet': 'Диета',
+                'category-sport': 'Спорт',
+                'category-health': 'Здоровье',
+                
+                'featured-title': 'Основы правильного питания',
+                'featured-excerpt': '10 золотых правил правильного питания. Как сохранить здоровье? Все ответы в этой статье.',
+                
+                'article1-title': 'Основы правильного питания',
+                'article1-excerpt': '10 золотых правил правильного питания. Как сохранить здоровье?',
+                
+                'article2-title': '5 полезных завтраков',
+                'article2-excerpt': 'Быстрые и полезные рецепты завтраков. Готово за 15 минут!',
+                
+                'article3-title': 'Важность воды',
+                'article3-excerpt': 'Почему нужно пить 2 литра воды в день? 5 фактов о пользе воды.',
+                
+                'article4-title': 'Диета для похудения',
+                'article4-excerpt': '7 секретов похудения без голода. Эффективная диета.',
+                
+                'article5-title': 'Спорт и питание',
+                'article5-excerpt': 'Что есть до и после тренировки? Полезные советы.',
+                
+                'article6-title': 'Список суперфудов',
+                'article6-excerpt': '10 полезных суперфудов. Чиа, киноа и другие.',
+                
+                'trending1-title': 'Диета для похудения',
+                'trending1-views': '1.5k читателей',
+                'trending2-title': 'Спорт и питание',
+                'trending2-views': '1.2k читателей',
+                'trending3-title': 'Список суперфудов',
+                'trending3-views': '892 читателя',
+                
+                'featured-full': '<h4>10 золотых правил правильного питания</h4><p>Правильное питание - один из ключевых факторов сохранения здоровья. Вот 10 важных правил:</p><ol><li>Питайтесь 5-6 раз в день (3 основных приема + 2-3 перекуса)</li><li>Пейте 2-3 литра воды в день</li><li>Ешьте много овощей и фруктов</li><li>Употребляйте белковую пищу (мясо, рыба, яйца, бобовые)</li><li>Откажитесь от фастфуда</li><li>Тщательно пережевывайте пищу</li><li>Последний прием пищи за 2-3 часа до сна</li><li>Выбирайте разноцветные продукты</li><li>Уменьшите сахар и соль</li><li>Высыпайтесь (7-8 часов)</li></ol>',
+                
+                'article1-full': '<h4>Что такое правильное питание?</h4><p>Правильное питание - это получение всех необходимых питательных веществ (белков, жиров, углеводов, витаминов, минералов) в сбалансированном количестве.</p><h4>10 золотых правил:</h4><ol><li>Обязательно завтракайте</li><li>Пейте 2-3 литра воды</li><li>Ограничьте жирную пищу</li><li>Уменьшите сладкое</li><li>Ешьте много овощей</li><li>Добавляйте белок</li><li>Используйте специи</li><li>Ешьте медленно</li><li>Питайтесь разнообразно</li><li>Соблюдайте режим отдыха</li></ol>',
+                
+                'article2-full': '<h4>5 идей полезного завтрака</h4><ol><li><strong>Овсяная каша</strong> - на молоке или воде, с ягодами и орехами</li><li><strong>Омлет</strong> - 2 яйца, овощи, сыр</li><li><strong>Греческий йогурт</strong> - с медом, орехами, ягодами</li><li><strong>Тост с авокадо</strong> - цельнозерновой хлеб, авокадо, яйцо</li><li><strong>Чиа пудинг</strong> - семена чиа, молоко, ягоды</li></ol><p>Все рецепты готовятся за 15-20 минут!</p>',
+                
+                'article3-full': '<h4>Польза воды</h4><ul><li><strong>Улучшает обмен веществ</strong> - без воды метаболизм замедляется</li><li><strong>Очищает кожу</strong> - вода увлажняет кожу и выводит токсины</li><li><strong>Дает энергию</strong> - обезвоживание вызывает усталость и головную боль</li><li><strong>Помогает контролировать вес</strong> - вода подавляет чувство голода</li><li><strong>Улучшает пищеварение</strong> - вода помогает усвоению пищи</li></ul><p>Взрослому человеку в среднем нужно 2-3 литра воды в день.</p>',
+                
+                'article4-full': '<h4>Диета для похудения</h4><p>Для похудения не нужно голодать. Вот эффективные методы:</p><ol><li><strong>Используйте маленькие тарелки</strong> - это помогает уменьшить порции</li><li><strong>Ешьте много овощей</strong> - в них мало калорий, много клетчатки</li><li><strong>Употребляйте больше белка</strong> - белок дает долгое чувство сытости</li><li><strong>Откажитесь от сладких напитков</strong> - в них много пустых калорий</li><li><strong>Прекратите есть на ночь</strong> - последний прием пищи за 3 часа до сна</li></ol>',
+                
+                'article5-full': '<h4>Спорт и питание</h4><p>Важно правильно питаться до и после тренировки:</p><h4>ДО тренировки (за 1-2 часа):</h4><ul><li>Сложные углеводы (овсянка, гречка, цельнозерновой хлеб)</li><li>Немного белка (йогурт, яйцо)</li><li>Пейте много воды</li></ul><h4>ПОСЛЕ тренировки (через 30-60 минут):</h4><ul><li>Белок (курица, рыба, протеиновый коктейль)</li><li>Овощи</li><li>Восстановите водный баланс</li></ul>',
+                
+                'article6-full': '<h4>ТОП-10 суперфудов</h4><ol><li><strong>Семена чиа</strong> - омега-3, клетчатка, кальций</li><li><strong>Киноа</strong> - полноценный белок, железо, магний</li><li><strong>Ягоды годжи</strong> - антиоксиданты, витамин С</li><li><strong>Ацерола</strong> - рекордсмен по витамину С</li><li><strong>Спирулина</strong> - белок, железо, витамин В12</li><li><strong>Какао</strong> - магний, антиоксиданты</li><li><strong>Имбирь</strong> - противовоспалительное</li><li><strong>Куркума</strong> - мощный антиоксидант</li><li><strong>Зеленый чай</strong> - катехины, антиоксиданты</li><li><strong>Грецкие орехи</strong> - омега-3, белок</li></ol>',
+                
+                'trending1-full': '<h4>Диета для похудения</h4><p>Для похудения не нужно голодать. Вот эффективные методы:</p><ol><li><strong>Используйте маленькие тарелки</strong> - это помогает уменьшить порции</li><li><strong>Ешьте много овощей</strong> - в них мало калорий, много клетчатки</li><li><strong>Употребляйте больше белка</strong> - белок дает долгое чувство сытости</li><li><strong>Откажитесь от сладких напитков</strong> - в них много пустых калорий</li><li><strong>Прекратите есть на ночь</strong> - последний прием пищи за 3 часа до сна</li></ol>',
+                
+                'trending2-full': '<h4>Спорт и питание</h4><p>Важно правильно питаться до и после тренировки:</p><h4>ДО тренировки (за 1-2 часа):</h4><ul><li>Сложные углеводы (овсянка, гречка, цельнозерновой хлеб)</li><li>Немного белка (йогурт, яйцо)</li><li>Пейте много воды</li></ul><h4>ПОСЛЕ тренировки (через 30-60 минут):</h4><ul><li>Белок (курица, рыба, протеиновый коктейль)</li><li>Овощи</li><li>Восстановите водный баланс</li></ul>',
+                
+                'trending3-full': '<h4>ТОП-10 суперфудов</h4><ol><li><strong>Семена чиа</strong> - омега-3, клетчатка, кальций</li><li><strong>Киноа</strong> - полноценный белок, железо, магний</li><li><strong>Ягоды годжи</strong> - антиоксиданты, витамин С</li><li><strong>Ацерола</strong> - рекордсмен по витамину С</li><li><strong>Спирулина</strong> - белок, железо, витамин В12</li><li><strong>Какао</strong> - магний, антиоксиданты</li><li><strong>Имбирь</strong> - противовоспалительное</li><li><strong>Куркума</strong> - мощный антиоксидант</li><li><strong>Зеленый чай</strong> - катехины, антиоксиданты</li><li><strong>Грецкие орехи</strong> - омега-3, белок</li></ol>',
+                
+                'newsletter-title': 'Подпишитесь на новости',
+                'newsletter-text': 'Читайте последние статьи первыми',
+                'newsletter-email': 'Введите Email',
+                'copyright': 'Все права защищены.'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'about': 'About',
+                'blog': 'Blog',
+                'contact': 'Contact',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'dashboard': 'Dashboard',
+                'profile': 'Profile',
+                'login': 'Login',
+                'register': 'Register',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'blog-slogan': 'Useful articles about healthy eating',
+                'search': 'Search articles...',
+                'latest': 'Latest articles',
+                'trending': 'Trending articles',
+                'all': 'All',
+                'featured': 'Featured',
+                'read-more': 'Read more',
+                'view-all': 'View all',
+                'subscribe': 'Subscribe',
+                
+                'category-nutrition': 'Nutrition',
+                'category-recipes': 'Recipes',
+                'category-tips': 'Tips',
+                'category-diet': 'Diet',
+                'category-sport': 'Sport',
+                'category-health': 'Health',
+                
+                'featured-title': 'Basics of healthy eating',
+                'featured-excerpt': '10 golden rules of healthy eating. How to maintain health? All answers in this article.',
+                
+                'article1-title': 'Basics of healthy eating',
+                'article1-excerpt': '10 golden rules of healthy eating. How to maintain health?',
+                
+                'article2-title': '5 healthy breakfasts',
+                'article2-excerpt': 'Quick and healthy breakfast recipes. Ready in 15 minutes!',
+                
+                'article3-title': 'Importance of water',
+                'article3-excerpt': 'Why drink 2 liters of water a day? 5 facts about the benefits of water.',
+                
+                'article4-title': 'Diet for weight loss',
+                'article4-excerpt': '7 secrets of weight loss without hunger. Effective diet.',
+                
+                'article5-title': 'Sport and nutrition',
+                'article5-excerpt': 'What to eat before and after training? Useful tips.',
+                
+                'article6-title': 'List of superfoods',
+                'article6-excerpt': '10 healthy superfoods. Chia, quinoa and others.',
+                
+                'trending1-title': 'Diet for weight loss',
+                'trending1-views': '1.5k readers',
+                'trending2-title': 'Sport and nutrition',
+                'trending2-views': '1.2k readers',
+                'trending3-title': 'List of superfoods',
+                'trending3-views': '892 readers',
+                
+                'featured-full': '<h4>10 golden rules of healthy eating</h4><p>Healthy eating is one of the key factors in maintaining health. Here are 10 important rules:</p><ol><li>Eat 5-6 times a day (3 main meals + 2-3 snacks)</li><li>Drink 2-3 liters of water per day</li><li>Eat plenty of vegetables and fruits</li><li>Consume protein foods (meat, fish, eggs, legumes)</li><li>Avoid fast food</li><li>Chew food thoroughly</li><li>Last meal 2-3 hours before bedtime</li><li>Choose colorful foods</li><li>Reduce sugar and salt</li><li>Get enough sleep (7-8 hours)</li></ol>',
+                
+                'article1-full': '<h4>What is healthy eating?</h4><p>Healthy eating is getting all the necessary nutrients (proteins, fats, carbohydrates, vitamins, minerals) in a balanced amount.</p><h4>10 golden rules:</h4><ol><li>Always have breakfast</li><li>Drink 2-3 liters of water</li><li>Limit fatty foods</li><li>Reduce sweets</li><li>Eat lots of vegetables</li><li>Add protein</li><li>Use spices</li><li>Eat slowly</li><li>Eat varied</li><li>Maintain rest mode</li></ol>',
+                
+                'article2-full': '<h4>5 healthy breakfast ideas</h4><ol><li><strong>Oatmeal</strong> - with milk or water, berries and nuts</li><li><strong>Omelette</strong> - 2 eggs, vegetables, cheese</li><li><strong>Greek yogurt</strong> - with honey, nuts, berries</li><li><strong>Avocado toast</strong> - whole grain bread, avocado, egg</li><li><strong>Chia pudding</strong> - chia seeds, milk, berries</li></ol><p>All recipes are ready in 15-20 minutes!</p>',
+                
+                'article3-full': '<h4>Benefits of water</h4><ul><li><strong>Improves metabolism</strong> - without water, metabolism slows down</li><li><strong>Cleanses skin</strong> - water moisturizes skin and removes toxins</li><li><strong>Gives energy</strong> - dehydration causes fatigue and headaches</li><li><strong>Helps control weight</strong> - water suppresses hunger</li><li><strong>Improves digestion</strong> - water helps food absorption</li></ul><p>An adult needs an average of 2-3 liters of water per day.</p>',
+                
+                'article4-full': '<h4>Diet for weight loss</h4><p>You don\'t need to starve to lose weight. Here are effective methods:</p><ol><li><strong>Use small plates</strong> - this helps reduce portions</li><li><strong>Eat lots of vegetables</strong> - they are low in calories, high in fiber</li><li><strong>Consume more protein</strong> - protein gives a long feeling of fullness</li><li><strong>Avoid sugary drinks</strong> - they contain many empty calories</li><li><strong>Stop eating at night</strong> - last meal 3 hours before bedtime</li></ol>',
+                
+                'article5-full': '<h4>Sport and nutrition</h4><p>It is important to eat right before and after training:</p><h4>BEFORE training (1-2 hours before):</h4><ul><li>Complex carbohydrates (oatmeal, buckwheat, whole grain bread)</li><li>A little protein (yogurt, egg)</li><li>Drink plenty of water</li></ul><h4>AFTER training (after 30-60 minutes):</h4><ul><li>Protein (chicken, fish, protein shake)</li><li>Vegetables</li><li>Restore water balance</li></ul>',
+                
+                'article6-full': '<h4>TOP-10 superfoods</h4><ol><li><strong>Chia seeds</strong> - omega-3, fiber, calcium</li><li><strong>Quinoa</strong> - complete protein, iron, magnesium</li><li><strong>Goji berries</strong> - antioxidants, vitamin C</li><li><strong>Acerola</strong> - record holder for vitamin C</li><li><strong>Spirulina</strong> - protein, iron, vitamin B12</li><li><strong>Cacao</strong> - magnesium, antioxidants</li><li><strong>Ginger</strong> - anti-inflammatory</li><li><strong>Turmeric</strong> - powerful antioxidant</li><li><strong>Green tea</strong> - catechins, antioxidants</li><li><strong>Walnuts</strong> - omega-3, protein</li></ol>',
+                
+                'trending1-full': '<h4>Diet for weight loss</h4><p>You don\'t need to starve to lose weight. Here are effective methods:</p><ol><li><strong>Use small plates</strong> - this helps reduce portions</li><li><strong>Eat lots of vegetables</strong> - they are low in calories, high in fiber</li><li><strong>Consume more protein</strong> - protein gives a long feeling of fullness</li><li><strong>Avoid sugary drinks</strong> - they contain many empty calories</li><li><strong>Stop eating at night</strong> - last meal 3 hours before bedtime</li></ol>',
+                
+                'trending2-full': '<h4>Sport and nutrition</h4><p>It is important to eat right before and after training:</p><h4>BEFORE training (1-2 hours before):</h4><ul><li>Complex carbohydrates (oatmeal, buckwheat, whole grain bread)</li><li>A little protein (yogurt, egg)</li><li>Drink plenty of water</li></ul><h4>AFTER training (after 30-60 minutes):</h4><ul><li>Protein (chicken, fish, protein shake)</li><li>Vegetables</li><li>Restore water balance</li></ul>',
+                
+                'trending3-full': '<h4>TOP-10 superfoods</h4><ol><li><strong>Chia seeds</strong> - omega-3, fiber, calcium</li><li><strong>Quinoa</strong> - complete protein, iron, magnesium</li><li><strong>Goji berries</strong> - antioxidants, vitamin C</li><li><strong>Acerola</strong> - record holder for vitamin C</li><li><strong>Spirulina</strong> - protein, iron, vitamin B12</li><li><strong>Cacao</strong> - magnesium, antioxidants</li><li><strong>Ginger</strong> - anti-inflammatory</li><li><strong>Turmeric</strong> - powerful antioxidant</li><li><strong>Green tea</strong> - catechins, antioxidants</li><li><strong>Walnuts</strong> - omega-3, protein</li></ol>',
+                
+                'newsletter-title': 'Subscribe to newsletter',
+                'newsletter-text': 'Read the latest articles first',
+                'newsletter-email': 'Enter Email',
+                'copyright': 'All rights reserved.'
+            }
+        };
+
+        const AIFunctions = {
+            toggleMenu: function() {
+                document.getElementById('menuPanel').classList.toggle('active');
+                document.getElementById('menuOverlay').classList.toggle('active');
+                document.getElementById('burgerIcon').classList.toggle('active');
+                document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+            },
+
+            closeMenu: function() {
+                document.getElementById('menuPanel').classList.remove('active');
+                document.getElementById('menuOverlay').classList.remove('active');
+                document.getElementById('burgerIcon').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            },
+
+            switchLanguage: function(lang) {
+                localStorage.setItem('preferred-language', lang);
+                document.documentElement.lang = lang;
+                
+                // Барлық lang-text элементтерін ауыстыру
+                document.querySelectorAll('.lang-text').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Placeholder мәтіндерін ауыстыру
+                document.querySelectorAll('.lang-placeholder').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.placeholder = translations[lang][key];
+                    }
+                });
+                
+                // Мақала атауларын ауыстыру
+                document.querySelectorAll('.blog-title').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Мақала қысқаша сипаттамаларын ауыстыру
+                document.querySelectorAll('.blog-excerpt').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Категория бейджтерін ауыстыру
+                document.querySelectorAll('.blog-category-badge').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Танымал мақалалар атауларын ауыстыру
+                document.querySelectorAll('.trending-content h4').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Танымал мақалалар көру санын ауыстыру
+                document.querySelectorAll('.trending-content p span').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(lang)) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                this.showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+            },
+
+            toggleTheme: function() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
+                
+                localStorage.setItem('preferred-theme', newTheme);
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                const themeBtn = document.getElementById('themeMenuBtn');
+                const icon = themeBtn.querySelector('i');
+                
+                if (newTheme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                    this.showToast('Қараңғы режим');
+                } else {
+                    icon.className = 'fas fa-moon';
+                    this.showToast('Жарық режим');
+                }
+            },
+
+            showToast: function(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            },
+
+            openArticle: function(articleId) {
+                const lang = localStorage.getItem('preferred-language') || 'kk';
+                const modal = document.getElementById('articleModal');
+                const modalImage = document.getElementById('modalImage').querySelector('img');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalDate = document.getElementById('modalDate');
+                const modalViews = document.getElementById('modalViews');
+                const modalCategory = document.getElementById('modalCategory');
+                const modalContent = document.getElementById('modalContent');
+
+                // Мақала деректерін орнату
+                const articleData = {
+                    featured: {
+                        image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800',
+                        title: translations[lang]['featured-title'],
+                        date: '15 Қаңтар 2026',
+                        views: '1.2k',
+                        category: translations[lang]['featured-title'],
+                        content: translations[lang]['featured-full']
+                    },
+                    article1: {
+                        image: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800',
+                        title: translations[lang]['article1-title'],
+                        date: '15 Қаңтар 2026',
+                        views: '1.2k',
+                        category: translations[lang]['category-nutrition'],
+                        content: translations[lang]['article1-full']
+                    },
+                    article2: {
+                        image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800',
+                        title: translations[lang]['article2-title'],
+                        date: '10 Қаңтар 2026',
+                        views: '982',
+                        category: translations[lang]['category-recipes'],
+                        content: translations[lang]['article2-full']
+                    },
+                    article3: {
+                        image: 'https://images.unsplash.com/photo-1543362906-acfc16c67564?w=800',
+                        title: translations[lang]['article3-title'],
+                        date: '5 Қаңтар 2026',
+                        views: '756',
+                        category: translations[lang]['category-tips'],
+                        content: translations[lang]['article3-full']
+                    },
+                    article4: {
+                        image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800',
+                        title: translations[lang]['article4-title'],
+                        date: '1 Қаңтар 2026',
+                        views: '1.5k',
+                        category: translations[lang]['category-diet'],
+                        content: translations[lang]['article4-full']
+                    },
+                    article5: {
+                        image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800',
+                        title: translations[lang]['article5-title'],
+                        date: '28 Желтоқсан 2025',
+                        views: '621',
+                        category: translations[lang]['category-sport'],
+                        content: translations[lang]['article5-full']
+                    },
+                    article6: {
+                        image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800',
+                        title: translations[lang]['article6-title'],
+                        date: '20 Желтоқсан 2025',
+                        views: '892',
+                        category: translations[lang]['category-health'],
+                        content: translations[lang]['article6-full']
+                    },
+                    trending1: {
+                        image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800',
+                        title: translations[lang]['trending1-title'],
+                        date: '1 Қаңтар 2026',
+                        views: '1.5k',
+                        category: translations[lang]['category-diet'],
+                        content: translations[lang]['trending1-full']
+                    },
+                    trending2: {
+                        image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800',
+                        title: translations[lang]['trending2-title'],
+                        date: '28 Желтоқсан 2025',
+                        views: '1.2k',
+                        category: translations[lang]['category-sport'],
+                        content: translations[lang]['trending2-full']
+                    },
+                    trending3: {
+                        image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800',
+                        title: translations[lang]['trending3-title'],
+                        date: '20 Желтоқсан 2025',
+                        views: '892',
+                        category: translations[lang]['category-health'],
+                        content: translations[lang]['trending3-full']
+                    }
+                };
+
+                const data = articleData[articleId];
+                if (data) {
+                    modalImage.src = data.image;
+                    modalImage.alt = data.title;
+                    modalTitle.textContent = data.title;
+                    modalDate.innerHTML = `<i class="far fa-calendar"></i> ${data.date}`;
+                    modalViews.innerHTML = `<i class="far fa-eye"></i> ${data.views}`;
+                    modalCategory.innerHTML = `<i class="far fa-folder"></i> ${data.category}`;
+                    modalContent.innerHTML = data.content;
+
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            },
+
+            closeModal: function() {
+                document.getElementById('articleModal').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        // Іздеу функциясы
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.blog-card').forEach(card => {
+                const title = card.querySelector('.blog-title').textContent.toLowerCase();
+                const excerpt = card.querySelector('.blog-excerpt').textContent.toLowerCase();
+                if (title.includes(searchTerm) || excerpt.includes(searchTerm) || searchTerm === '') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Категория фильтрі
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                
+                document.querySelectorAll('.blog-card').forEach(card => {
+                    const badge = card.querySelector('.blog-category-badge')?.textContent || '';
+                    if (category === 'all' || badge.includes(category)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Жазылу формасы
+        document.getElementById('newsletterForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            const successMsg = lang === 'kk' ? 'Жазылдыңыз! Рахмет' : 
+                               lang === 'ru' ? 'Вы подписались! Спасибо' : 
+                               'Subscribed! Thank you';
+            AIFunctions.showToast(successMsg);
+            this.reset();
+        });
+
+        // Escape пернесімен модальды жабу
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                AIFunctions.closeMenu();
+                AIFunctions.closeModal();
+            }
+        });
+
+        // Модаль сыртын басқанда жабу
+        document.getElementById('articleModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                AIFunctions.closeModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            AIFunctions.switchLanguage(savedLang);
+            
+            if (savedTheme === 'dark') {
+                document.getElementById('themeMenuBtn').querySelector('i').className = 'fas fa-sun';
+            }
+        });
+
+        window.AIFunctions = AIFunctions;
+    </script>
+</body>
+</html>

@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Бақылау панелі - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --button-success: #10b981;
+            --button-success-hover: #059669;
+            --button-warning: #f97316;
+            --button-danger: #ef4444;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --button-success: #34d399;
+            --button-success-hover: #10b981;
+            --button-warning: #fb923c;
+            --button-danger: #f87171;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s ease;
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: var(--error-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= PAGE HEADER ============= */
+        .page-header {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            padding: 40px 0;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: 40px;
+        }
+
+        .page-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .welcome-section h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .welcome-section p {
+            opacity: 0.95;
+            font-size: 1.1rem;
+        }
+
+        .date-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* ============= КАЛОРИЯ КАРТОЧКАЛАРЫ ============= */
+        .calorie-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .calorie-card {
+            background: var(--card-bg);
+            padding: 20px 16px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            animation: scaleIn 0.6s ease;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .calorie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .calorie-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .calorie-card.limit::before {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+
+        .calorie-card.consumed::before {
+            background: linear-gradient(90deg, #f97316, #ea580c);
+        }
+
+        .calorie-card.remaining::before {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .calorie-card.burned::before {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .calorie-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .calorie-header i {
+            font-size: 1.3rem;
+        }
+
+        .calorie-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .calorie-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ============= ТЕЗ ӘРЕКЕТТЕР ============= */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 50px;
+        }
+
+        .action-btn {
+            background: var(--card-bg);
+            padding: 20px 12px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border: none;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px);
+            border-color: var(--button-primary);
+        }
+
+        .action-btn i {
+            font-size: 2rem;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+        }
+
+        .action-btn small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* ============= ТАҒАМДАР СЕКЦИЯСЫ ============= */
+        .meal-section {
+            margin-bottom: 50px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 i {
+            color: var(--button-primary);
+        }
+
+        .total-calories-badge {
+            background: var(--button-primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .meal-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .meal-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            animation: fadeIn 0.6s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--button-primary);
+        }
+
+        .meal-header {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .meal-header h3 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meal-header h3 i {
+            color: var(--button-primary);
+        }
+
+        .meal-calories {
+            font-weight: 700;
+            color: var(--button-primary);
+            font-size: 0.9rem;
+        }
+
+        .meal-items {
+            list-style: none;
+            padding: 12px;
+            min-height: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .meal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            border-left: 3px solid var(--button-primary);
+            animation: fadeIn 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .meal-item span:first-child {
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+
+        .meal-item span:last-child {
+            color: var(--button-warning);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .food-item-remove {
+            color: var(--error-color);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .food-item-remove:hover {
+            background: rgba(239,68,68,0.1);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 15px;
+            font-style: italic;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .add-food-btn {
+            width: calc(100% - 20px);
+            margin: 10px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .add-food-btn:hover {
+            border-color: var(--button-primary);
+            color: var(--button-primary);
+        }
+
+        /* ============= ПРОГРЕСС ============= */
+        .progress-section {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        .progress-section h2 {
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .progress-stat-item {
+            text-align: center;
+        }
+
+        .progress-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--button-primary);
+        }
+
+        .progress-stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-container {
+            height: 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--button-primary), var(--button-success));
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-chart-container {
+            margin-top: 30px;
+            height: 200px;
+        }
+
+        /* ============= СТАТИСТИКА ГРИД ============= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--button-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+        }
+
+        /* ============= ШЫҒУ КНОПКАСЫ ============= */
+        .logout-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--error-color);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 40px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 8px 20px rgba(239,68,68,0.2);
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(239,68,68,0.3);
+        }
+
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--footer-text);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--button-primary);
+        }
+
+        .footer p {
+            opacity: 0.8;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s;
+            border-left: 4px solid var(--success-color);
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ============= МОБИЛЬДІ АДАПТАЦИЯ ============= */
+        
+        /* Планшеттер (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .calorie-summary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .meal-cards {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .progress-stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+
+        /* Үлкен телефондар (480px - 768px) */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .menu-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .page-header .container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .welcome-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .welcome-section p {
+                font-size: 1rem;
+            }
+            
+            .date-badge {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+                font-size: 1rem;
+            }
+            
+            .calorie-summary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .calorie-card {
+                padding: 16px 12px;
+            }
+            
+            .calorie-value {
+                font-size: 1.8rem;
+            }
+            
+            .calorie-header {
+                font-size: 0.85rem;
+            }
+            
+            .calorie-header i {
+                font-size: 1.1rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .action-btn {
+                padding: 16px 10px;
+            }
+            
+            .action-btn i {
+                font-size: 1.8rem;
+            }
+            
+            .action-btn span {
+                font-size: 0.9rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .meal-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .meal-card {
+                max-width: 100%;
+            }
+            
+            .meal-header h3 {
+                font-size: 1rem;
+            }
+            
+            .meal-calories {
+                font-size: 0.85rem;
+            }
+            
+            .progress-section {
+                padding: 25px;
+            }
+            
+            .progress-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .progress-stat-value {
+                font-size: 1.8rem;
+            }
+            
+            .progress-chart-container {
+                height: 180px;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Кішкентай телефондар (480px төмен) */
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+            
+            .logo i {
+                font-size: 1.6rem;
+            }
+            
+            .burger-icon {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .burger-icon span {
+                width: 20px;
+            }
+            
+            .page-header {
+                padding: 30px 0;
+                border-radius: 0 0 30px 30px;
+            }
+            
+            .welcome-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .calorie-summary {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .calorie-card {
+                padding: 15px;
+            }
+            
+            .calorie-value {
+                font-size: 2rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .action-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 15px;
+            }
+            
+            .action-btn i {
+                font-size: 1.5rem;
+                margin-right: 10px;
+            }
+            
+            .action-btn span {
+                flex: 1;
+                text-align: left;
+            }
+            
+            .action-btn small {
+                display: none;
+            }
+            
+            .progress-section {
+                padding: 20px;
+            }
+            
+            .progress-stat-value {
+                font-size: 1.6rem;
+            }
+            
+            .meal-item {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .meal-item span:first-child {
+                max-width: 100%;
+                white-space: normal;
+            }
+            
+            .total-calories-badge {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .logout-btn {
+                font-size: 1rem;
+                padding: 12px 24px;
+            }
+            
+            .toast {
+                width: 90%;
+                text-align: center;
+                font-size: 0.9rem;
+                padding: 12px 20px;
+            }
+        }
+
+        /* Өте кішкентай телефондар (360px төмен) */
+        @media (max-width: 360px) {
+            .calorie-value {
+                font-size: 1.6rem;
+            }
+            
+            .action-btn {
+                padding: 12px;
+            }
+            
+            .action-btn i {
+                font-size: 1.3rem;
+            }
+            
+            .action-btn span {
+                font-size: 0.8rem;
+            }
+            
+            .meal-header {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+            }
+            
+            .meal-calories {
+                align-self: flex-end;
+            }
+            
+            .progress-stat-value {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            <div class="burger-icon" id="burgerIcon" onclick="AIFunctions.toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="AIFunctions.closeMenu()"></div>
+
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="AIFunctions.closeMenu()"><i class="fas fa-times"></i></div>
+        </div>
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> <span class="lang-text" data-key="about">Біз туралы</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-blog"></i> <span class="lang-text" data-key="blog">Блог</span></a></li>
+            <li><a href="contact.html"><i class="fas fa-address-book"></i> <span class="lang-text" data-key="contact">Байланыс</span></a></li>
+            <li><a href="menu.html"><i class="fas fa-utensils"></i> <span class="lang-text" data-key="menu">Мәзір</span></a></li>
+            <li><a href="calories.html"><i class="fas fa-fire"></i> <span class="lang-text" data-key="calories">Калория</span></a></li>
+            <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> <span class="lang-text" data-key="dashboard">Бақылау</span></a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> <span class="lang-text" data-key="profile">Профиль</span></a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+        </ul>
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('en')">EN</button>
+            </div>
+        </div>
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="AIFunctions.toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i> <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <section class="page-header">
+        <div class="container">
+            <div class="welcome-section">
+                <h1><i class="fas fa-tachometer-alt"></i> <span id="welcomeMessage" class="welcome-text">Қош келдіңіз!</span></h1>
+                <p><i class="fas fa-smile"></i> <span id="greetingMessage" class="lang-text" data-key="track-progress">Бүгінгі прогресті бақылаңыз</span></p>
+            </div>
+            <div class="date-badge">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="container">
+            <!-- Калория карточкалары -->
+            <div class="calorie-summary">
+                <div class="calorie-card limit">
+                    <div class="calorie-header">
+                        <i class="fas fa-bullseye"></i>
+                        <span class="lang-text" data-key="daily-limit">Күндік лимит</span>
+                    </div>
+                    <div class="calorie-value" id="dailyLimit">2000</div>
+                    <div class="calorie-label">ккал</div>
+                </div>
+
+                <div class="calorie-card consumed">
+                    <div class="calorie-header">
+                        <i class="fas fa-utensils"></i>
+                        <span class="lang-text" data-key="consumed">Тұтынылған</span>
+                    </div>
+                    <div class="calorie-value" id="consumedCalories">0</div>
+                    <div class="calorie-label">ккал</div>
+                </div>
+
+                <div class="calorie-card remaining">
+                    <div class="calorie-header">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span class="lang-text" data-key="remaining">Қалған</span>
+                    </div>
+                    <div class="calorie-value" id="remainingCalories">2000</div>
+                    <div class="calorie-label">ккал</div>
+                </div>
+
+                <div class="calorie-card burned">
+                    <div class="calorie-header">
+                        <i class="fas fa-running"></i>
+                        <span class="lang-text" data-key="burned">Жанарған</span>
+                    </div>
+                    <div class="calorie-value" id="burnedCalories">0</div>
+                    <div class="calorie-label">ккал</div>
+                </div>
+            </div>
+
+            <!-- Тез әрекеттер -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="window.location.href='menu.html'">
+                    <i class="fas fa-utensils" style="color: #10b981;"></i>
+                    <span class="lang-text" data-key="go-to-menu">Мәзірге өту</span>
+                    <small class="lang-text" data-key="add-food">Тағам қосу</small>
+                </button>
+
+                <button class="action-btn" onclick="showStatistics()">
+                    <i class="fas fa-chart-line" style="color: #6366f1;"></i>
+                    <span class="lang-text" data-key="statistics">Статистика</span>
+                    <small class="lang-text" data-key="view-stats">Толық талдау</small>
+                </button>
+
+                <button class="action-btn" onclick="window.location.href='profile.html'">
+                    <i class="fas fa-user" style="color: #8b5cf6;"></i>
+                    <span class="lang-text" data-key="profile">Профиль</span>
+                    <small class="lang-text" data-key="edit-profile">Деректерді өзгерту</small>
+                </button>
+
+                <button class="action-btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt" style="color: #f97316;"></i>
+                    <span class="lang-text" data-key="refresh">Жаңарту</span>
+                    <small class="lang-text" data-key="update-data">Деректерді жаңарту</small>
+                </button>
+            </div>
+
+            <!-- Тағамдар секциясы -->
+            <div class="meal-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-utensils"></i> <span class="lang-text" data-key="today-meals">Бүгінгі тағамдар</span></h2>
+                    <span class="total-calories-badge" id="totalCaloriesBadge">0 ккал</span>
+                </div>
+
+                <div class="meal-cards">
+                    <!-- Таңғы ас -->
+                    <div class="meal-card">
+                        <div class="meal-header">
+                            <h3><i class="fas fa-sun"></i> <span class="lang-text" data-key="breakfast">Таңғы ас</span></h3>
+                            <span class="meal-calories" id="breakfastTotal">0 ккал</span>
+                        </div>
+                        <ul class="meal-items" id="breakfastItems">
+                            <li class="empty-message lang-text" data-key="no-food">Тағам қосылмаған</li>
+                        </ul>
+                        <button class="add-food-btn" onclick="window.location.href='menu.html?meal=breakfast'">
+                            <i class="fas fa-plus"></i> <span class="lang-text" data-key="add-from-menu">Мәзірден қосу</span>
+                        </button>
+                    </div>
+
+                    <!-- Түскі ас -->
+                    <div class="meal-card">
+                        <div class="meal-header">
+                            <h3><i class="fas fa-cloud-sun"></i> <span class="lang-text" data-key="lunch">Түскі ас</span></h3>
+                            <span class="meal-calories" id="lunchTotal">0 ккал</span>
+                        </div>
+                        <ul class="meal-items" id="lunchItems">
+                            <li class="empty-message lang-text" data-key="no-food">Тағам қосылмаған</li>
+                        </ul>
+                        <button class="add-food-btn" onclick="window.location.href='menu.html?meal=lunch'">
+                            <i class="fas fa-plus"></i> <span class="lang-text" data-key="add-from-menu">Мәзірден қосу</span>
+                        </button>
+                    </div>
+
+                    <!-- Кешкі ас -->
+                    <div class="meal-card">
+                        <div class="meal-header">
+                            <h3><i class="fas fa-moon"></i> <span class="lang-text" data-key="dinner">Кешкі ас</span></h3>
+                            <span class="meal-calories" id="dinnerTotal">0 ккал</span>
+                        </div>
+                        <ul class="meal-items" id="dinnerItems">
+                            <li class="empty-message lang-text" data-key="no-food">Тағам қосылмаған</li>
+                        </ul>
+                        <button class="add-food-btn" onclick="window.location.href='menu.html?meal=dinner'">
+                            <i class="fas fa-plus"></i> <span class="lang-text" data-key="add-from-menu">Мәзірден қосу</span>
+                        </button>
+                    </div>
+
+                    <!-- Қосымша ас -->
+                    <div class="meal-card">
+                        <div class="meal-header">
+                            <h3><i class="fas fa-cookie-bite"></i> <span class="lang-text" data-key="snack">Қосымша ас</span></h3>
+                            <span class="meal-calories" id="snackTotal">0 ккал</span>
+                        </div>
+                        <ul class="meal-items" id="snackItems">
+                            <li class="empty-message lang-text" data-key="no-food">Тағам қосылмаған</li>
+                        </ul>
+                        <button class="add-food-btn" onclick="window.location.href='menu.html?meal=snack'">
+                            <i class="fas fa-plus"></i> <span class="lang-text" data-key="add-from-menu">Мәзірден қосу</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Прогресс секциясы -->
+            <div class="progress-section">
+                <h2><i class="fas fa-chart-line"></i> <span class="lang-text" data-key="weekly-progress">Апталық прогресс</span></h2>
+
+                <div class="progress-stats">
+                    <div class="progress-stat-item">
+                        <div class="progress-stat-value" id="weeklyAverage">1850</div>
+                        <div class="progress-stat-label lang-text" data-key="daily-avg">Орташа күндік</div>
+                    </div>
+                    <div class="progress-stat-item">
+                        <div class="progress-stat-value" id="bestDay">0</div>
+                        <div class="progress-stat-label lang-text" data-key="best-day">Үздік күн</div>
+                    </div>
+                    <div class="progress-stat-item">
+                        <div class="progress-stat-value" id="totalWeek">0</div>
+                        <div class="progress-stat-label lang-text" data-key="total-week">Апталық жиын</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="weeklyProgress" style="width: 0%;"></div>
+                </div>
+
+                <div class="progress-chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Шығу кнопкасы -->
+            <div class="logout-section">
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="lang-text" data-key="logout">Жүйеден шығу</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="about.html" class="lang-text" data-key="about">Біз туралы</a>
+                <a href="blog.html" class="lang-text" data-key="blog">Блог</a>
+                <a href="contact.html" class="lang-text" data-key="contact">Байланыс</a>
+                <a href="menu.html" class="lang-text" data-key="menu">Мәзір</a>
+                <a href="calories.html" class="lang-text" data-key="calories">Калория</a>
+                <a href="dashboard.html" class="lang-text" data-key="dashboard">Бақылау</a>
+                <a href="profile.html" class="lang-text" data-key="profile">Профиль</a>
+                <a href="login.html" class="lang-text" data-key="login">Кіру</a>
+                <a href="register.html" class="lang-text" data-key="register">Тіркелу</a>
+            </div>
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'about': 'Біз туралы',
+                'blog': 'Блог',
+                'contact': 'Байланыс',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'dashboard': 'Бақылау',
+                'profile': 'Профиль',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'daily-limit': 'Күндік лимит',
+                'consumed': 'Тұтынылған',
+                'remaining': 'Қалған',
+                'burned': 'Жанарған',
+                'go-to-menu': 'Мәзірге өту',
+                'add-food': 'Тағам қосу',
+                'statistics': 'Статистика',
+                'view-stats': 'Толық талдау',
+                'edit-profile': 'Деректерді өзгерту',
+                'refresh': 'Жаңарту',
+                'update-data': 'Деректерді жаңарту',
+                'today-meals': 'Бүгінгі тағамдар',
+                'breakfast': 'Таңғы ас',
+                'lunch': 'Түскі ас',
+                'dinner': 'Кешкі ас',
+                'snack': 'Қосымша ас',
+                'no-food': 'Тағам қосылмаған',
+                'add-from-menu': 'Мәзірден қосу',
+                'weekly-progress': 'Апталық прогресс',
+                'daily-avg': 'Орташа күндік',
+                'best-day': 'Үздік күн',
+                'total-week': 'Апталық жиын',
+                'logout': 'Жүйеден шығу',
+                'copyright': 'Барлық құқықтар қорғалған.',
+                'track-progress': 'Бүгінгі прогресті бақылаңыз',
+                'welcome': 'Қош келдіңіз',
+                'good-morning': 'Қайырлы таң!',
+                'good-afternoon': 'Қайырлы күн!',
+                'good-evening': 'Қайырлы кеш!'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'about': 'О нас',
+                'blog': 'Блог',
+                'contact': 'Контакты',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'dashboard': 'Панель',
+                'profile': 'Профиль',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'daily-limit': 'Дневной лимит',
+                'consumed': 'Потреблено',
+                'remaining': 'Осталось',
+                'burned': 'Сожжено',
+                'go-to-menu': 'Перейти в меню',
+                'add-food': 'Добавить еду',
+                'statistics': 'Статистика',
+                'view-stats': 'Полный анализ',
+                'edit-profile': 'Изменить данные',
+                'refresh': 'Обновить',
+                'update-data': 'Обновить данные',
+                'today-meals': 'Сегодняшние приемы пищи',
+                'breakfast': 'Завтрак',
+                'lunch': 'Обед',
+                'dinner': 'Ужин',
+                'snack': 'Перекус',
+                'no-food': 'Еда не добавлена',
+                'add-from-menu': 'Добавить из меню',
+                'weekly-progress': 'Недельный прогресс',
+                'daily-avg': 'Средний день',
+                'best-day': 'Лучший день',
+                'total-week': 'Недельная сумма',
+                'logout': 'Выйти',
+                'copyright': 'Все права защищены.',
+                'track-progress': 'Отслеживайте прогресс сегодня',
+                'welcome': 'Добро пожаловать',
+                'good-morning': 'Доброе утро!',
+                'good-afternoon': 'Добрый день!',
+                'good-evening': 'Добрый вечер!'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'about': 'About',
+                'blog': 'Blog',
+                'contact': 'Contact',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'dashboard': 'Dashboard',
+                'profile': 'Profile',
+                'login': 'Login',
+                'register': 'Register',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'daily-limit': 'Daily limit',
+                'consumed': 'Consumed',
+                'remaining': 'Remaining',
+                'burned': 'Burned',
+                'go-to-menu': 'Go to menu',
+                'add-food': 'Add food',
+                'statistics': 'Statistics',
+                'view-stats': 'Full analysis',
+                'edit-profile': 'Edit profile',
+                'refresh': 'Refresh',
+                'update-data': 'Update data',
+                'today-meals': 'Today\'s meals',
+                'breakfast': 'Breakfast',
+                'lunch': 'Lunch',
+                'dinner': 'Dinner',
+                'snack': 'Snack',
+                'no-food': 'No food added',
+                'add-from-menu': 'Add from menu',
+                'weekly-progress': 'Weekly progress',
+                'daily-avg': 'Daily average',
+                'best-day': 'Best day',
+                'total-week': 'Weekly total',
+                'logout': 'Logout',
+                'copyright': 'All rights reserved.',
+                'track-progress': 'Track today\'s progress',
+                'welcome': 'Welcome',
+                'good-morning': 'Good morning!',
+                'good-afternoon': 'Good afternoon!',
+                'good-evening': 'Good evening!'
+            }
+        };
+
+        const STORAGE_KEYS = {
+            USER_DATA: 'menuCalories_userData',
+            HEALTH_DATA: 'menuCalories_healthData',
+            TODAY_FOODS: 'menuCalories_todayFoods',
+            IS_LOGGED_IN: 'menuCalories_isLoggedIn'
+        };
+
+        let weeklyChart = null;
+        let weeklyData = [];
+
+        const AIFunctions = {
+            toggleMenu: function() {
+                document.getElementById('menuPanel').classList.toggle('active');
+                document.getElementById('menuOverlay').classList.toggle('active');
+                document.getElementById('burgerIcon').classList.toggle('active');
+                document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+            },
+
+            closeMenu: function() {
+                document.getElementById('menuPanel').classList.remove('active');
+                document.getElementById('menuOverlay').classList.remove('active');
+                document.getElementById('burgerIcon').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            },
+
+            switchLanguage: function(lang) {
+                localStorage.setItem('preferred-language', lang);
+                document.documentElement.lang = lang;
+                
+                document.querySelectorAll('.lang-text').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(lang)) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                this.showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+                
+                // Қоштасу сөзін жаңарту
+                updateGreeting();
+                loadUserData(); // welcome сөзін жаңарту үшін
+            },
+
+            toggleTheme: function() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
+                
+                localStorage.setItem('preferred-theme', newTheme);
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                const themeBtn = document.getElementById('themeMenuBtn');
+                const icon = themeBtn.querySelector('i');
+                
+                if (newTheme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                    this.showToast('Қараңғы режим');
+                } else {
+                    icon.className = 'fas fa-moon';
+                    this.showToast('Жарық режим');
+                }
+            },
+
+            showToast: function(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        };
+
+        // === Қоштасу сөзін жаңарту ===
+        function updateGreeting() {
+            const hours = new Date().getHours();
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            let greeting;
+            if (hours < 12) {
+                greeting = translations[lang]['good-morning'];
+            } else if (hours < 18) {
+                greeting = translations[lang]['good-afternoon'];
+            } else {
+                greeting = translations[lang]['good-evening'];
+            }
+            
+            document.getElementById('greetingMessage').textContent = greeting;
+        }
+
+        // === ПАЙДАЛАНУШЫ КІРГЕНІН ТЕКСЕРУ ===
+        function checkAuth() {
+            if (localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN) !== 'true') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // === ПАЙДАЛАНУШЫ ДЕРЕКТЕРІН ЖҮКТЕУ ===
+        function loadUserData() {
+            const userData = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DATA));
+            const healthData = JSON.parse(localStorage.getItem(STORAGE_KEYS.HEALTH_DATA));
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            const welcomeElement = document.getElementById('welcomeMessage');
+            
+            if (userData && userData.fullname) {
+                const firstName = userData.fullname.split(' ')[0];
+                welcomeElement.textContent = `${translations[lang]['welcome']}, ${firstName}!`;
+            } else {
+                welcomeElement.textContent = translations[lang]['welcome'] + '!';
+            }
+
+            // Күндік лимитті есептеу
+            if (healthData) {
+                const dailyLimit = calculateDailyLimit(healthData);
+                document.getElementById('dailyLimit').textContent = dailyLimit;
+                document.getElementById('remainingCalories').textContent = dailyLimit;
+            }
+        }
+
+        // === КҮНДІК ЛИМИТТІ ЕСЕПТЕУ ===
+        function calculateDailyLimit(healthData) {
+            const weight = parseFloat(healthData.weight) || 65;
+            const height = parseFloat(healthData.height) || 165;
+            const age = parseFloat(healthData.age) || 28;
+            const gender = healthData.gender || 'female';
+            const goal = healthData.goal || 'maintain';
+            
+            let bmr;
+            if (gender === 'female') {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            }
+            
+            let calories = Math.round(bmr * 1.375);
+            
+            switch(goal) {
+                case 'lose': calories -= 500; break;
+                case 'gain': calories += 300; break;
+            }
+            
+            return Math.max(1200, calories);
+        }
+
+        // === КҮНДІ ЖАҢАРТУ ===
+        function updateDate() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('kk-KZ', options);
+            
+            updateGreeting();
+        }
+
+        // === БҮГІНГІ ТАҒАМДАРДЫ ЖҮКТЕУ ===
+        function loadTodayFoods() {
+            const saved = localStorage.getItem(STORAGE_KEYS.TODAY_FOODS);
+            
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.date === new Date().toDateString()) {
+                        displayAllMeals(data.foods);
+                        updateCalorieStats(data.foods);
+                        updateWeeklyData();
+                    } else {
+                        clearAllMeals();
+                        initializeWeeklyData();
+                    }
+                } catch (e) {
+                    clearAllMeals();
+                    initializeWeeklyData();
+                }
+            } else {
+                clearAllMeals();
+                initializeWeeklyData();
+            }
+        }
+
+        // === АПТАЛЫҚ ДЕРЕКТЕРДІ ЖАҢАРТУ ===
+        function updateWeeklyData() {
+            const weekData = [];
+            let total = 0;
+            let maxDay = 0;
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toDateString();
+                
+                const saved = localStorage.getItem(STORAGE_KEYS.TODAY_FOODS);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        if (data.date === dateStr) {
+                            const dayTotal = Object.values(data.foods || {}).flat().reduce((sum, item) => sum + (item.calories || 0), 0);
+                            weekData.push(dayTotal);
+                            total += dayTotal;
+                            if (dayTotal > maxDay) maxDay = dayTotal;
+                        } else {
+                            weekData.push(0);
+                        }
+                    } catch {
+                        weekData.push(0);
+                    }
+                } else {
+                    weekData.push(0);
+                }
+            }
+            
+            weeklyData = weekData;
+            
+            const avg = Math.round(total / 7);
+            document.getElementById('weeklyAverage').textContent = avg || 1850;
+            document.getElementById('bestDay').textContent = maxDay;
+            document.getElementById('totalWeek').textContent = total;
+            
+            updateWeeklyChart();
+        }
+
+        // === АПТАЛЫҚ ГРАФИКТІ ЖАҢАРТУ ===
+        function updateWeeklyChart() {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            
+            if (weeklyChart) {
+                weeklyChart.destroy();
+            }
+            
+            const days = ['Дс', 'Сс', 'Ср', 'Бс', 'Жм', 'Сб', 'Жс'];
+            
+            weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Тұтынылған калория',
+                        data: weeklyData,
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // === АПТАЛЫҚ ДЕРЕКТЕРДІ ИНИЦИАЛИЗАЦИЯЛАУ ===
+        function initializeWeeklyData() {
+            weeklyData = [0, 0, 0, 0, 0, 0, 0];
+            updateWeeklyChart();
+        }
+
+        // === БАРЛЫҚ ТАҒАМДАРДЫ КӨРСЕТУ ===
+        function displayAllMeals(foods) {
+            displayMeal('breakfast', foods.breakfast || []);
+            displayMeal('lunch', foods.lunch || []);
+            displayMeal('dinner', foods.dinner || []);
+            displayMeal('snack', foods.snack || []);
+        }
+
+        // === БІР АС ТҮРІН КӨРСЕТУ ===
+        function displayMeal(mealType, items) {
+            const container = document.getElementById(mealType + 'Items');
+            const totalElement = document.getElementById(mealType + 'Total');
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            if (!container) return;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<li class="empty-message">' + translations[lang]['no-food'] + '</li>';
+                if (totalElement) totalElement.textContent = '0 ккал';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            items.forEach((item, index) => {
+                total += item.calories;
+                html += `
+                    <li class="meal-item">
+                        <span>${item.name}</span>
+                        <span>${item.calories} ккал</span>
+                        <span class="food-item-remove" onclick="removeFood('${mealType}', ${index})">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                    </li>
+                `;
+            });
+            
+            container.innerHTML = html;
+            if (totalElement) totalElement.textContent = total + ' ккал';
+            
+            // Жалпы калорияны жаңарту
+            updateTotalCaloriesBadge();
+        }
+
+        // === ЖАЛПЫ КАЛОРИЯ БЕДЖІН ЖАҢАРТУ ===
+        function updateTotalCaloriesBadge() {
+            const totals = ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => {
+                const el = document.getElementById(meal + 'Total');
+                return el ? parseInt(el.textContent) || 0 : 0;
+            });
+            
+            const total = totals.reduce((a, b) => a + b, 0);
+            document.getElementById('totalCaloriesBadge').textContent = total + ' ккал';
+        }
+
+        // === ТАҒАМДЫ ӨШІРУ ===
+        window.removeFood = function(mealType, index) {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TODAY_FOODS));
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            if (saved && saved.foods && saved.foods[mealType]) {
+                saved.foods[mealType].splice(index, 1);
+                localStorage.setItem(STORAGE_KEYS.TODAY_FOODS, JSON.stringify(saved));
+                
+                displayMeal(mealType, saved.foods[mealType]);
+                updateCalorieStats(saved.foods);
+                updateWeeklyData();
+                
+                AIFunctions.showToast(translations[lang]['no-food'] || 'Тағам өшірілді');
+            }
+        };
+
+        // === КАЛОРИЯ СТАТИСТИКАСЫН ЖАҢАРТУ ===
+        function updateCalorieStats(foods) {
+            let total = 0;
+            
+            ['breakfast', 'lunch', 'dinner', 'snack'].forEach(meal => {
+                total += (foods[meal] || []).reduce((sum, item) => sum + item.calories, 0);
+            });
+            
+            document.getElementById('consumedCalories').textContent = total;
+            
+            const dailyLimit = parseInt(document.getElementById('dailyLimit').textContent) || 2000;
+            const remaining = Math.max(0, dailyLimit - total);
+            document.getElementById('remainingCalories').textContent = remaining;
+            
+            // Прогресс бар
+            const progress = Math.min(100, (total / dailyLimit) * 100);
+            document.getElementById('weeklyProgress').style.width = progress + '%';
+            
+            // Басқа статистикалар
+            document.getElementById('burnedCalories').textContent = Math.round(total * 0.1);
+        }
+
+        // === ТАҒАМДАРДЫ ТАЗАЛАУ ===
+        function clearAllMeals() {
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            ['breakfast', 'lunch', 'dinner', 'snack'].forEach(meal => {
+                const container = document.getElementById(meal + 'Items');
+                const totalElement = document.getElementById(meal + 'Total');
+                
+                if (container) {
+                    container.innerHTML = '<li class="empty-message">' + translations[lang]['no-food'] + '</li>';
+                }
+                if (totalElement) {
+                    totalElement.textContent = '0 ккал';
+                }
+            });
+            
+            document.getElementById('consumedCalories').textContent = '0';
+            document.getElementById('remainingCalories').textContent = document.getElementById('dailyLimit').textContent;
+            document.getElementById('weeklyProgress').style.width = '0%';
+            document.getElementById('burnedCalories').textContent = '0';
+            document.getElementById('totalCaloriesBadge').textContent = '0 ккал';
+        }
+
+        // === СТАТИСТИКАНЫ КӨРСЕТУ ===
+        window.showStatistics = function() {
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            AIFunctions.showToast(translations[lang]['statistics'] + ' ' + (lang === 'kk' ? 'жүктелуде...' : lang === 'ru' ? 'загружается...' : 'loading...'));
+            // Статистика бетіне өту (кейінірек қосылады)
+            // window.location.href = 'statistics.html';
+        }
+
+        // === ДЕРЕКТЕРДІ ЖАҢАРТУ ===
+        window.refreshData = function() {
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            loadTodayFoods();
+            AIFunctions.showToast(translations[lang]['update-data'] || 'Деректер жаңартылды');
+        }
+
+        // === ЖҮЙЕДЕН ШЫҒУ ===
+        window.logout = function() {
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'false');
+            AIFunctions.showToast(lang === 'kk' ? 'Сау болыңыз!' : lang === 'ru' ? 'До свидания!' : 'Goodbye!');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        }
+
+        // === БЕТ ЖҮКТЕЛГЕНДЕ ===
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            AIFunctions.switchLanguage(savedLang);
+            
+            if (savedTheme === 'dark') {
+                document.getElementById('themeMenuBtn').querySelector('i').className = 'fas fa-sun';
+            }
+            
+            loadUserData();
+            updateDate();
+            loadTodayFoods();
+            updateWeeklyData();
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    AIFunctions.closeMenu();
+                }
+            });
+            
+            // Әр 30 секунд сайын жаңарту
+            setInterval(loadTodayFoods, 30000);
+        });
+
+        window.AIFunctions = AIFunctions;
+    </script>
+</body>
+</html>

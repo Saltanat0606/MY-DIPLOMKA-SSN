@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мәзір - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --button-success: #10b981;
+            --button-success-hover: #059669;
+            --button-orange: #f97316;
+            --button-orange-hover: #ea580c;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --badge-blue: #3b82f6;
+            --badge-green: #10b981;
+            --badge-orange: #f97316;
+            --badge-purple: #8b5cf6;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --button-success: #34d399;
+            --button-success-hover: #10b981;
+            --button-orange: #fb923c;
+            --button-orange-hover: #f97316;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+            --badge-blue: #60a5fa;
+            --badge-green: #34d399;
+            --badge-orange: #fdba74;
+            --badge-purple: #c084fc;
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            filter: drop-shadow(0 5px 10px rgba(255,255,255,0.3));
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: var(--error-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+            border-color: var(--button-primary);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .theme-menu-btn i {
+            font-size: 1.2rem;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= ГЕРОЙ ============= */
+        .hero {
+            background: linear-gradient(135deg, var(--button-orange), var(--button-orange-hover));
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+            position: relative;
+            animation: slideDown 0.8s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+            position: relative;
+            animation: fadeIn 0.8s ease 0.2s both;
+        }
+
+        /* ============= МӘЗІР ============= */
+        .menu-section {
+            padding: 60px 0;
+        }
+
+        .menu-counter {
+            text-align: center;
+            margin: 30px auto;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 60px;
+            box-shadow: var(--card-shadow);
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+            animation: scaleIn 0.8s ease 0.4s both;
+        }
+
+        .menu-counter span {
+            color: var(--button-primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+            background: var(--bg-secondary);
+            padding: 5px 20px;
+            border-radius: 40px;
+            margin: 0 10px;
+        }
+
+        /* ============= ІЗДЕУ ============= */
+        .menu-search {
+            max-width: 650px;
+            margin: 40px auto;
+            position: relative;
+            animation: fadeIn 0.8s ease 0.6s both;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid var(--input-border);
+            border-radius: 60px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .search-box input:focus {
+            border-color: var(--button-primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box button {
+            padding: 18px 35px;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        /* ============= КАТЕГОРИЯЛАР ============= */
+        .menu-categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 50px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 60px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.8s ease 0.8s both;
+        }
+
+        .category-tab {
+            padding: 14px 28px;
+            background: var(--bg-secondary);
+            border: 2px solid transparent;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .category-tab i {
+            color: var(--button-primary);
+            transition: var(--transition);
+        }
+
+        .category-tab:hover {
+            transform: translateY(-3px);
+            border-color: var(--button-primary);
+            background: var(--card-bg);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .category-tab.active i {
+            color: white;
+        }
+
+        /* ============= КАТЕГОРИЯ СЕКЦИЯЛАРЫ ============= */
+        .menu-category-section {
+            margin-bottom: 80px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 40px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .category-title {
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--button-primary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 2rem;
+        }
+
+        .category-title i {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* ============= МӘЗІР ГРИД ============= */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 35px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            position: relative;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            animation: scaleIn 0.6s ease;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px var(--shadow-color);
+        }
+
+        .menu-img {
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .menu-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu-card:hover .menu-img img {
+            transform: scale(1.15);
+        }
+
+        .menu-info {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .menu-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .menu-info p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        .menu-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .menu-details span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-details i {
+            color: var(--button-primary);
+        }
+
+        /* ============= БЕЙДЖТЕР ============= */
+        .type-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: var(--badge-blue);
+            color: white;
+        }
+
+        .type-badge.vegan { background: var(--badge-green); }
+        .type-badge.protein { background: var(--badge-orange); }
+        .type-badge.fish { background: var(--badge-purple); }
+
+        .calorie-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        /* ============= КНОПКА ============= */
+        .btn-add {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--button-success), var(--button-success-hover));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: auto;
+            min-height: 56px;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-add.added {
+            background: linear-gradient(135deg, #64748b, #475569);
+            pointer-events: none;
+        }
+
+        /* ============= ХАБАРЛАМА ============= */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+            padding: 16px 28px;
+            border-radius: 60px;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.9;
+            margin: 8px 0;
+        }
+
+        .footer a {
+            color: var(--button-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--button-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid var(--success-color);
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        /* ============= МЕДИА ============= */
+        @media (max-width: 768px) {
+            .menu-panel { width: 100%; right: -100%; }
+            .hero h2 { font-size: 2.2rem; }
+            .search-box { flex-direction: column; }
+            .search-box button { width: 100%; }
+            .menu-categories { overflow-x: auto; justify-content: flex-start; border-radius: 30px; }
+            .menu-grid { grid-template-columns: 1fr; }
+            .menu-category-section { padding: 25px; }
+            .logo h1 { font-size: 1.4rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h2 { font-size: 1.8rem; }
+            .category-title { font-size: 1.5rem; }
+            .category-title i { width: 50px; height: 50px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Хедер -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            
+            <!-- Бургер-меню -->
+            <div class="burger-icon" id="burgerIcon" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Оверлей -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+    <!-- Меню панелі -->
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="closeMenu()">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+            <li><a href="menu.html" class="active"><i class="fas fa-utensils"></i> <span class="lang-text" data-key="menu">Мәзір</span></a></li>
+            <li><a href="calories.html"><i class="fas fa-fire"></i> <span class="lang-text" data-key="calories">Калория</span></a></li>
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span class="lang-text" data-key="dashboard">Бақылау</span></a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> <span class="lang-text" data-key="profile">Профиль</span></a></li>
+        </ul>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('en')">EN</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i>
+                <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Герой -->
+    <section class="hero">
+        <div class="container">
+            <h2><i class="fas fa-utensils"></i> <span class="lang-text" data-key="menu-hero">Денсаулықты ас мәзірлері</span></h2>
+            <p class="lang-text" data-key="menu-hero-text">50+ денсаулықты тағамдардан таңдау жасаңыз</p>
+            
+            <div class="menu-counter">
+                <span class="lang-text" data-key="total">Барлығы:</span> <span id="totalDishes">50</span> <span class="lang-text" data-key="dishes">тағам</span>
+            </div>
+            
+            <div class="menu-search">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="lang-placeholder" data-key="search-placeholder" placeholder="Тағам атауын іздеу...">
+                    <button id="searchBtn">
+                        <i class="fas fa-search"></i> <span class="lang-text" data-key="search">Іздеу</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Мәзір -->
+    <section class="menu-section">
+        <div class="container">
+            <!-- Категории -->
+            <div class="menu-categories">
+                <div class="category-tab active" data-category="all">
+                    <i class="fas fa-th-large"></i> <span class="lang-text" data-key="all">Барлығы</span> (40)
+                </div>
+                <div class="category-tab" data-category="breakfast">
+                    <i class="fas fa-sun"></i> <span class="lang-text" data-key="breakfast">Таңғы ас</span> (10)
+                </div>
+                <div class="category-tab" data-category="lunch">
+                    <i class="fas fa-utensils"></i> <span class="lang-text" data-key="lunch">Түскі ас</span> (12)
+                </div>
+                <div class="category-tab" data-category="dinner">
+                    <i class="fas fa-moon"></i> <span class="lang-text" data-key="dinner">Кешкі ас</span> (10)
+                </div>
+                <div class="category-tab" data-category="dessert">
+                    <i class="fas fa-ice-cream"></i> <span class="lang-text" data-key="dessert">Тәттілер</span> (8)
+                </div>
+            </div>
+
+            <!-- ========== ТАҢҒЫ АС ========== -->
+            <div class="menu-category-section" id="breakfast">
+                <h2 class="category-title"><i class="fas fa-sun"></i> <span class="cat-title" data-cat="breakfast">Таңғы ас</span></h2>
+                
+                <div class="menu-grid">
+                    <!-- Таңғы ас карточкалары -->
+                    <div class="menu-card" data-category="breakfast" data-calories="420" data-id="breakfast1">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">420 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1603046891726-36bfd957e0bf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fHRvYXN0fGVufDB8fDB8fHww" alt="Жұмыртқа және тосты">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast1-name">Жұмыртқа және тосты</h3>
+                            <p class="dish-desc" data-dish="breakfast1-desc">2 жұмыртқа, толық дәнді нан, авокадо, шпинат, томат соусы</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 15 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 420, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="350" data-id="breakfast2">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">350 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1542691457-cbe4df041eb2?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Жарма ботқасы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast2-name">Жарма ботқасы</h3>
+                            <p class="dish-desc" data-dish="breakfast2-desc">Сұлы жармасы, банан, жидектер, жаңғақтар, бал</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 10 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 350, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="280" data-id="breakfast3">
+                        <div class="type-badge" style="background: #10b981;"><span class="badge-text" data-badge="low-cal">Төмен калория</span></div>
+                        <div class="calorie-badge">280 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&h=400&fit=crop&auto=format" alt="Смузи">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast3-name">Пайдалы смузи</h3>
+                            <p class="dish-desc" data-dish="breakfast3-desc">Банан, жидектер, сүт, чиа тұқымдары, бал</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 8 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 280, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="320" data-id="breakfast4">
+                        <div class="type-badge" style="background: #8b5cf6;"><span class="badge-text" data-badge="probiotic">Пробиотиктер</span></div>
+                        <div class="calorie-badge">320 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&h=400&fit=crop&auto=format" alt="Йогурт парфе">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast4-name">Йогурт парфе</h3>
+                            <p class="dish-desc" data-dish="breakfast4-desc">Грек йогурты, гранола, жидектер, бал, жаңғақтар</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 7 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.5</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 320, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="410" data-id="breakfast5">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">410 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1510693206972-df098062cb71?q=80&w=1598&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Омлет">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast5-name">Көкөніс омлеті</h3>
+                            <p class="dish-desc" data-dish="breakfast5-desc">3 жұмыртқа, қызанақ, бұрыш, пияз, шпинат</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 18 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 410, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="240" data-id="breakfast6">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">240 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1552528352-59648b345866?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2hpYSUyMHB1ZGRpbmd8ZW58MHx8MHx8fDA%3D" alt="Чиа пудингі">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast6-name">Чиа пудингі</h3>
+                            <p class="dish-desc" data-dish="breakfast6-desc">Чиа тұқымдары, бадам сүті, ваниль, жидектер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 5 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.4</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 240, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="360" data-id="breakfast7">
+                        <div class="type-badge" style="background: #f97316;"><span class="badge-text" data-badge="sweet">Тәтті</span></div>
+                        <div class="calorie-badge">360 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://plus.unsplash.com/premium_photo-1695932833326-89d8017ea20d?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8dG9hc3QlMjBiZXJyaWVzfGVufDB8fDB8fHww" alt="Француз тосты">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast7-name">Француз тосты</h3>
+                            <p class="dish-desc" data-dish="breakfast7-desc">Толық дәнді нан, бал, жидектер, жаңғақтар</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 15 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 360, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="390" data-id="breakfast8">
+                        <div class="type-badge" style="background: #f97316;"><span class="badge-text" data-badge="sweet">Тәтті</span></div>
+                        <div class="calorie-badge">390 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=600&h=400&fit=crop&auto=format" alt="Блиндер">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast8-name">Блиндер</h3>
+                            <p class="dish-desc" data-dish="breakfast8-desc">Толық дәнді блиндер, банан, жидектер, бал</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 20 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 390, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="310" data-id="breakfast9">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">310 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?w=600&h=400&fit=crop&auto=format" alt="Тофу">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast9-name">Тофу шижи</h3>
+                            <p class="dish-desc" data-dish="breakfast9-desc">Тофу, қызанақ, пияз, бұрыш, шпинат</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 22 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.3</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 310, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" data-category="breakfast" data-calories="270" data-id="breakfast10">
+                        <div class="type-badge" style="background: #10b981;"><span class="badge-text" data-badge="light">Жеңіл</span></div>
+                        <div class="calorie-badge">270 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://media.istockphoto.com/id/1249206154/photo/woman-making-healthy-breakfast-in-kitchen.webp?a=1&b=1&s=612x612&w=0&k=20&c=fd0pp1DAvKRsJsl0o9VbFv5kOeiE2RVAVz1F2Y2znKI=" alt="Мюсли">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="breakfast10-name">Мюсли</h3>
+                            <p class="dish-desc" data-dish="breakfast10-desc">Мюсли, бадам сүті, банан, жидектер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 3 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.2</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('breakfast', this.parentElement.querySelector('h3').textContent, 270, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== ТҮСКІ АС ========== -->
+            <div class="menu-category-section" id="lunch">
+                <h2 class="category-title"><i class="fas fa-utensils"></i> <span class="cat-title" data-cat="lunch">Түскі ас</span></h2>
+                
+                <div class="menu-grid">
+                    <!-- 1. Гриль тауық -->
+                    <div class="menu-card" data-category="lunch" data-calories="650" data-id="lunch1">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">650 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&h=400&fit=crop&auto=format" alt="Гриль тауық">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch1-name">Гриль тауық</h3>
+                            <p class="dish-desc" data-dish="lunch1-desc">Тауық кеудесі, қоңыр күріш, жасыл салат, қызанақ</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 30 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 650, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Гриль лосось -->
+                    <div class="menu-card" data-category="lunch" data-calories="580" data-id="lunch2">
+                        <div class="type-badge fish"><span class="badge-text" data-badge="fish">Балық</span></div>
+                        <div class="calorie-badge">580 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1611599537845-1c7aca0091c0?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Z3JpbGxlZCUyMHNhbG1vbnxlbnwwfHwwfHx8MA%3D%3D" alt="Лосось">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch2-name">Гриль лосось</h3>
+                            <p class="dish-desc" data-dish="lunch2-desc">Лосось филе, киноа, лимон соусы, көкөністер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 25 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.9</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 580, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Веган табақшасы -->
+                    <div class="menu-card" data-category="lunch" data-calories="520" data-id="lunch3">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">520 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop&auto=format" alt="Веган табақшасы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch3-name">Веган табақшасы</h3>
+                            <p class="dish-desc" data-dish="lunch3-desc">Тофу, киноа, авокадо, эдамаме, кунжут</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 25 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 520, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Түркия орамасы -->
+                    <div class="menu-card" data-category="lunch" data-calories="610" data-id="lunch4">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">610 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&h=400&fit=crop&auto=format" alt="Түркия орамасы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch4-name">Түркия орамасы</h3>
+                            <p class="dish-desc" data-dish="lunch4-desc">Тортилья, түркия еті, авокадо, шпинат, қызанақ</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 15 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 610, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Киноа салаты -->
+                    <div class="menu-card" data-category="lunch" data-calories="450" data-id="lunch5">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">450 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cXVpbm9hJTIwc2FsYWR8ZW58MHx8MHx8fDA%3D" alt="Киноа салаты">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch5-name">Киноа салаты</h3>
+                            <p class="dish-desc" data-dish="lunch5-desc">Киноа, қара бұршақ, қызанақ, авокадо, лимон</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 20 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.5</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 450, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 6. Баттат бургер -->
+                    <div class="menu-card" data-category="lunch" data-calories="680" data-id="lunch6">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">680 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?w=600&h=400&fit=crop&auto=format" alt="Бургер">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch6-name">Баттат бургер</h3>
+                            <p class="dish-desc" data-dish="lunch6-desc">Баттат котлет, авокадо, шпинат, толық дәнді бұлка</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 35 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 680, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Тауық қуыруы -->
+                    <div class="menu-card" data-category="lunch" data-calories="590" data-id="lunch7">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">590 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1606756790138-261d2b21cd75?w=600&h=400&fit=crop&auto=format" alt="Тауық қуыруы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch7-name">Тауық қуыруы</h3>
+                            <p class="dish-desc" data-dish="lunch7-desc">Тауық еті, брокколи, бұрыш, соя соусы, күріш</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 28 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 590, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 8. Балық тако -->
+                    <div class="menu-card" data-category="lunch" data-calories="530" data-id="lunch8">
+                        <div class="type-badge fish"><span class="badge-text" data-badge="fish">Балық</span></div>
+                        <div class="calorie-badge">530 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=600&h=400&fit=crop&auto=format" alt="Тако">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch8-name">Балық тако</h3>
+                            <p class="dish-desc" data-dish="lunch8-desc">Гриль балық, тортилья, капуста, авокадо соусы</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 22 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 530, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 9. Веган лазанья -->
+                    <div class="menu-card" data-category="lunch" data-calories="720" data-id="lunch9">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">720 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=600&h=400&fit=crop&auto=format" alt="Лазанья">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch9-name">Веган лазанья</h3>
+                            <p class="dish-desc" data-dish="lunch9-desc">Саңырауқұлақ, шпинат, қызанақ соусы, веган ірімшік</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 45 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.9</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 720, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 10. Сиыр стейк -->
+                    <div class="menu-card" data-category="lunch" data-calories="750" data-id="lunch10">
+                        <div class="type-badge protein"><span class="badge-text" data-badge="protein">Белок</span></div>
+                        <div class="calorie-badge">750 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1558030006-450675393462?w=600&h=400&fit=crop&auto=format" alt="Стейк">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch10-name">Сиыр стейк</h3>
+                            <p class="dish-desc" data-dish="lunch10-desc">Стейк, картоп, спаржа, гриль көкөністер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 30 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 750, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 11. Тон балық салаты -->
+                    <div class="menu-card" data-category="lunch" data-calories="410" data-id="lunch11">
+                        <div class="type-badge fish"><span class="badge-text" data-badge="fish">Балық</span></div>
+                        <div class="calorie-badge">410 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1612949060306-4c298ad7f34c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8dHVuYSUyMHNhbGFkfGVufDB8fDB8fHww" alt="Тон балық">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch11-name">Тон балық салаты</h3>
+                            <p class="dish-desc" data-dish="lunch11-desc">Тон балығы, қияр, қызанақ, пияз, майонез</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 12 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.4</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 410, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 12. Тофу карри -->
+                    <div class="menu-card" data-category="lunch" data-calories="480" data-id="lunch12">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">480 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://plus.unsplash.com/premium_photo-1712604940796-1a1dd9021bf1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Карри">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="lunch12-name">Тофу карри</h3>
+                            <p class="dish-desc" data-dish="lunch12-desc">Тофу, кокос сүті, карри, көкөністер, күріш</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 30 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.5</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('lunch', this.parentElement.querySelector('h3').textContent, 480, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== КЕШКІ АС ========== -->
+            <div class="menu-category-section" id="dinner">
+                <h2 class="category-title"><i class="fas fa-moon"></i> <span class="cat-title" data-cat="dinner">Кешкі ас</span></h2>
+                
+                <div class="menu-grid">
+                    <!-- 1. Печень балық -->
+                    <div class="menu-card" data-category="dinner" data-calories="520" data-id="dinner1">
+                        <div class="type-badge fish"><span class="badge-text" data-badge="fish">Балық</span></div>
+                        <div class="calorie-badge">520 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&h=400&fit=crop&auto=format" alt="Балық">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner1-name">Печень балық</h3>
+                            <p class="dish-desc" data-dish="dinner1-desc">Балық филе, лимон, көкөністер, картоп</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 30 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 520, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Брокколи супы -->
+                    <div class="menu-card" data-category="dinner" data-calories="420" data-id="dinner2">
+                        <div class="type-badge" style="background: #3b82f6;"><span class="badge-text" data-badge="soup">Суп</span></div>
+                        <div class="calorie-badge">420 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://plus.unsplash.com/premium_photo-1703156750322-c139f2def537?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8YnJva29saSUyMHNvdXB8ZW58MHx8MHx8fDA%3D" alt="Брокколи супы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner2-name">Брокколи супы</h3>
+                            <p class="dish-desc" data-dish="dinner2-desc">Брокколи, картоп, қаймақ, дәмдеуіштер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 25 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.5</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 420, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Толтырылған бұрыш -->
+                    <div class="menu-card" data-category="dinner" data-calories="480" data-id="dinner3">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">480 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1673646960062-9aeb2188335f?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3R1ZmZlZCUyMHBlcHBlcnN8ZW58MHx8MHx8fDA%3D" alt="Толтырылған бұрыш">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner3-name">Толтырылған бұрыш</h3>
+                            <p class="dish-desc" data-dish="dinner3-desc">Бұрыш, күріш, көкөністер, ірімшік</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 40 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 480, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Тауық қуыруы -->
+                    <div class="menu-card" data-category="dinner" data-calories="510" data-id="dinner4">
+                        <div class="type-badge"><span class="badge-text" data-badge="chicken">Тауық</span></div>
+                        <div class="calorie-badge">510 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1606756790138-261d2b21cd75?w=600&h=400&fit=crop&auto=format" alt="Тауық">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner4-name">Тауық қуыруы</h3>
+                            <p class="dish-desc" data-dish="dinner4-desc">Тауық еті, брокколи, бұрыш, соя соусы</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 28 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 510, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Цуккини кеспесі -->
+                    <div class="menu-card" data-category="dinner" data-calories="390" data-id="dinner5">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">390 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1598866594230-a7c12756260f?w=600&h=400&fit=crop&auto=format" alt="Цуккини кеспесі">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner5-name">Цуккини кеспесі</h3>
+                            <p class="dish-desc" data-dish="dinner5-desc">Цуккини, песто, қызанақ, саңырауқұлақ</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 20 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.4</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 390, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 6. Жасымық карри -->
+                    <div class="menu-card" data-category="dinner" data-calories="460" data-id="dinner6">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">460 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://plus.unsplash.com/premium_photo-1712678665862-3c51d1fac466?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bGVudGlsJTIwc291cHxlbnwwfHwwfHx8MA%3D%3D" alt="Жасымық карри">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner6-name">Жасымық карри</h3>
+                            <p class="dish-desc" data-dish="dinner6-desc">Қызыл жасымық, кокос сүті, карри, күріш</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 35 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 460, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Саңырауқұлақ ризотто -->
+                    <div class="menu-card" data-category="dinner" data-calories="540" data-id="dinner7">
+                        <div class="type-badge"><span class="badge-text" data-badge="mushroom">Саңырауқұлақ</span></div>
+                        <div class="calorie-badge">540 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&h=400&fit=crop&auto=format" alt="Ризотто">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner7-name">Саңырауқұлақ ризотто</h3>
+                            <p class="dish-desc" data-dish="dinner7-desc">Арборио күріші, саңырауқұлақ, пармезан</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 40 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 540, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 8. Спагетти болоньезе -->
+                    <div class="menu-card" data-category="dinner" data-calories="580" data-id="dinner8">
+                        <div class="type-badge" style="background: #f97316;"><span class="badge-text" data-badge="italian">Итальян</span></div>
+                        <div class="calorie-badge">580 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&h=400&fit=crop&auto=format" alt="Спагетти">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner8-name">Спагетти болоньезе</h3>
+                            <p class="dish-desc" data-dish="dinner8-desc">Спагетти, сиыр еті соусы, пармезан</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 35 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 580, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 9. Веган кәуап -->
+                    <div class="menu-card" data-category="dinner" data-calories="430" data-id="dinner9">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">430 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://plus.unsplash.com/premium_photo-1712604942871-39eabf6a3841?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dmVnYW4lMjBrZWJhYnxlbnwwfHwwfHx8MA%3D%3D" alt="Кәуап">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner9-name">Веган кәуап</h3>
+                            <p class="dish-desc" data-dish="dinner9-desc">Тофу, бұрыш, пияз, саңырауқұлақ, соя соусы</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 25 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 430, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 10. Көкөніс кәуабы -->
+                    <div class="menu-card" data-category="dinner" data-calories="350" data-id="dinner10">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">350 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1625944227313-4f7f68e6b3fa?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlZ2F0YWJsZSUyMGtlYmFifGVufDB8fDB8fHww" alt="Көкөніс кәуабы">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dinner10-name">Көкөніс кәуабы</h3>
+                            <p class="dish-desc" data-dish="dinner10-desc">Бұрыш, пияз, цуккини, саңырауқұлақ, соус</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 20 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.5</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dinner', this.parentElement.querySelector('h3').textContent, 350, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== ТӘТТІЛЕР ========== -->
+            <div class="menu-category-section" id="dessert">
+                <h2 class="category-title"><i class="fas fa-ice-cream"></i> <span class="cat-title" data-cat="dessert">Тәттілер</span></h2>
+                
+                <div class="menu-grid">
+                    <!-- 1. Чиа пудинг -->
+                    <div class="menu-card" data-category="dessert" data-calories="280" data-id="dessert1">
+                        <div class="type-badge vegan"><span class="badge-text" data-badge="vegan">Веган</span></div>
+                        <div class="calorie-badge">280 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1552528352-59648b345866?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2hpYSUyMHB1ZGRpbmd8ZW58MHx8MHx8fDA%3D" alt="Чиа пудинг">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dessert1-name">Чиа пудинг</h3>
+                            <p class="dish-desc" data-dish="dessert1-desc">Чиа тұқымдары, кокос сүті, жидектер, бал</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 5 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dessert', this.parentElement.querySelector('h3').textContent, 280, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Жеміс салаты -->
+                    <div class="menu-card" data-category="dessert" data-calories="220" data-id="dessert2">
+                        <div class="type-badge" style="background: #10b981;"><span class="badge-text" data-badge="vitamin">Витаминдер</span></div>
+                        <div class="calorie-badge">220 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1564093497595-593b96d80180?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGZydWl0cyUyMHNhbGFkfGVufDB8fDB8fHww" alt="Жеміс салаты">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dessert2-name">Жеміс салаты</h3>
+                            <p class="dish-desc" data-dish="dessert2-desc">Алма, банан, апельсин, жүзім, жидектер</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 10 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dessert', this.parentElement.querySelector('h3').textContent, 220, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Қара шоколад -->
+                    <div class="menu-card" data-category="dessert" data-calories="210" data-id="dessert3">
+                        <div class="type-badge" style="background: #8b5cf6;"><span class="badge-text" data-badge="antioxidant">Антиоксидант</span></div>
+                        <div class="calorie-badge">210 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1511381939415-e44015466834?w=600&h=400&fit=crop&auto=format" alt="Шоколад">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dessert3-name">Қара шоколад</h3>
+                            <p class="dish-desc" data-dish="dessert3-desc">85% қара шоколад, бадам, жаңғақтар</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 2 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dessert', this.parentElement.querySelector('h3').textContent, 210, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Банан балмұздақ -->
+                    <div class="menu-card" data-category="dessert" data-calories="290" data-id="dessert4">
+                        <div class="type-badge" style="background: #f97316;"><span class="badge-text" data-badge="sweet">Тәтті</span></div>
+                        <div class="calorie-badge">290 <span class="lang-text" data-key="kcal">ккал</span></div>
+                        <div class="menu-img">
+                            <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&h=400&fit=crop&auto=format" alt="Банан балмұздақ">
+                        </div>
+                        <div class="menu-info">
+                            <h3 class="dish-name" data-dish="dessert4-name">Банан балмұздақ</h3>
+                            <p class="dish-desc" data-dish="dessert4-desc">Мұздатылған банан, арахис майы, шоколад</p>
+                            <div class="menu-details">
+                                <span><i class="fas fa-clock"></i> 8 <span class="lang-text" data-key="minutes">мин</span></span>
+                                <span><i class="fas fa-star"></i> 4.9</span>
+                            </div>
+                            <button class="btn-add" onclick="addToDashboard('dessert', this.parentElement.querySelector('h3').textContent, 290, this)">
+                                <i class="fas fa-plus"></i> <span class="lang-text" data-key="add">Мәзірге қосу</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============ ТІЛДЕР ============
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'about': 'Біз туралы',
+                'dashboard': 'Бақылау',
+                'profile': 'Профиль',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'menu-hero': 'Денсаулықты ас мәзірлері',
+                'menu-hero-text': '50+ денсаулықты тағамдардан таңдау жасаңыз',
+                'total': 'Барлығы:',
+                'dishes': 'тағам',
+                'search': 'Іздеу',
+                'search-placeholder': 'Тағам атауын іздеу...',
+                'all': 'Барлығы',
+                'breakfast': 'Таңғы ас',
+                'lunch': 'Түскі ас',
+                'dinner': 'Кешкі ас',
+                'dessert': 'Тәттілер',
+                'add': 'Мәзірге қосу',
+                'added': 'Қосылды!',
+                'not-logged': 'Алдымен жүйеге кіріңіз!',
+                'added-to-diary': 'күнделікке қосылды!',
+                'minutes': 'мин',
+                'kcal': 'ккал',
+                'copyright': 'Барлық құқықтар қорғалған.',
+                
+                // Тағам атаулары
+                'breakfast1-name': 'Жұмыртқа және тосты',
+                'breakfast1-desc': '2 жұмыртқа, толық дәнді нан, авокадо, шпинат, томат соусы',
+                'breakfast2-name': 'Жарма ботқасы',
+                'breakfast2-desc': 'Сұлы жармасы, банан, жидектер, жаңғақтар, бал',
+                'breakfast3-name': 'Пайдалы смузи',
+                'breakfast3-desc': 'Банан, жидектер, сүт, чиа тұқымдары, бал',
+                'breakfast4-name': 'Йогурт парфе',
+                'breakfast4-desc': 'Грек йогурты, гранола, жидектер, бал, жаңғақтар',
+                'breakfast5-name': 'Көкөніс омлеті',
+                'breakfast5-desc': '3 жұмыртқа, қызанақ, бұрыш, пияз, шпинат',
+                'breakfast6-name': 'Чиа пудингі',
+                'breakfast6-desc': 'Чиа тұқымдары, бадам сүті, ваниль, жидектер',
+                'breakfast7-name': 'Француз тосты',
+                'breakfast7-desc': 'Толық дәнді нан, бал, жидектер, жаңғақтар',
+                'breakfast8-name': 'Блиндер',
+                'breakfast8-desc': 'Толық дәнді блиндер, банан, жидектер, бал',
+                'breakfast9-name': 'Тофу шижи',
+                'breakfast9-desc': 'Тофу, қызанақ, пияз, бұрыш, шпинат',
+                'breakfast10-name': 'Мюсли',
+                'breakfast10-desc': 'Мюсли, бадам сүті, банан, жидектер',
+                
+                'lunch1-name': 'Гриль тауық',
+                'lunch1-desc': 'Тауық кеудесі, қоңыр күріш, жасыл салат, қызанақ',
+                'lunch2-name': 'Гриль лосось',
+                'lunch2-desc': 'Лосось филе, киноа, лимон соусы, көкөністер',
+                'lunch3-name': 'Веган табақшасы',
+                'lunch3-desc': 'Тофу, киноа, авокадо, эдамаме, кунжут',
+                'lunch4-name': 'Түркия орамасы',
+                'lunch4-desc': 'Тортилья, түркия еті, авокадо, шпинат, қызанақ',
+                'lunch5-name': 'Киноа салаты',
+                'lunch5-desc': 'Киноа, қара бұршақ, қызанақ, авокадо, лимон',
+                'lunch6-name': 'Баттат бургер',
+                'lunch6-desc': 'Баттат котлет, авокадо, шпинат, толық дәнді бұлка',
+                'lunch7-name': 'Тауық қуыруы',
+                'lunch7-desc': 'Тауық еті, брокколи, бұрыш, соя соусы, күріш',
+                'lunch8-name': 'Балық тако',
+                'lunch8-desc': 'Гриль балық, тортилья, капуста, авокадо соусы',
+                'lunch9-name': 'Веган лазанья',
+                'lunch9-desc': 'Саңырауқұлақ, шпинат, қызанақ соусы, веган ірімшік',
+                'lunch10-name': 'Сиыр стейк',
+                'lunch10-desc': 'Стейк, картоп, спаржа, гриль көкөністер',
+                'lunch11-name': 'Тон балық салаты',
+                'lunch11-desc': 'Тон балығы, қияр, қызанақ, пияз, майонез',
+                'lunch12-name': 'Тофу карри',
+                'lunch12-desc': 'Тофу, кокос сүті, карри, көкөністер, күріш',
+                
+                'dinner1-name': 'Печень балық',
+                'dinner1-desc': 'Балық филе, лимон, көкөністер, картоп',
+                'dinner2-name': 'Брокколи супы',
+                'dinner2-desc': 'Брокколи, картоп, қаймақ, дәмдеуіштер',
+                'dinner3-name': 'Толтырылған бұрыш',
+                'dinner3-desc': 'Бұрыш, күріш, көкөністер, ірімшік',
+                'dinner4-name': 'Тауық қуыруы',
+                'dinner4-desc': 'Тауық еті, брокколи, бұрыш, соя соусы',
+                'dinner5-name': 'Цуккини кеспесі',
+                'dinner5-desc': 'Цуккини, песто, қызанақ, саңырауқұлақ',
+                'dinner6-name': 'Жасымық карри',
+                'dinner6-desc': 'Қызыл жасымық, кокос сүті, карри, күріш',
+                'dinner7-name': 'Саңырауқұлақ ризотто',
+                'dinner7-desc': 'Арборио күріші, саңырауқұлақ, пармезан',
+                'dinner8-name': 'Спагетти болоньезе',
+                'dinner8-desc': 'Спагетти, сиыр еті соусы, пармезан',
+                'dinner9-name': 'Веган кәуап',
+                'dinner9-desc': 'Тофу, бұрыш, пияз, саңырауқұлақ, соя соусы',
+                'dinner10-name': 'Көкөніс кәуабы',
+                'dinner10-desc': 'Бұрыш, пияз, цуккини, саңырауқұлақ, соус',
+                
+                'dessert1-name': 'Чиа пудинг',
+                'dessert1-desc': 'Чиа тұқымдары, кокос сүті, жидектер, бал',
+                'dessert2-name': 'Жеміс салаты',
+                'dessert2-desc': 'Алма, банан, апельсин, жүзім, жидектер',
+                'dessert3-name': 'Қара шоколад',
+                'dessert3-desc': '85% қара шоколад, бадам, жаңғақтар',
+                'dessert4-name': 'Банан балмұздақ',
+                'dessert4-desc': 'Мұздатылған банан, арахис майы, шоколад',
+                
+                // Бейджтер
+                'protein': 'Белок',
+                'vegan': 'Веган',
+                'fish': 'Балық',
+                'low-cal': 'Төмен калория',
+                'probiotic': 'Пробиотиктер',
+                'sweet': 'Тәтті',
+                'light': 'Жеңіл',
+                'soup': 'Суп',
+                'chicken': 'Тауық',
+                'mushroom': 'Саңырауқұлақ',
+                'italian': 'Итальян',
+                'vitamin': 'Витаминдер',
+                'antioxidant': 'Антиоксидант'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'about': 'О нас',
+                'dashboard': 'Панель',
+                'profile': 'Профиль',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'menu-hero': 'Здоровое меню',
+                'menu-hero-text': 'Выберите из 50+ здоровых блюд',
+                'total': 'Всего:',
+                'dishes': 'блюд',
+                'search': 'Поиск',
+                'search-placeholder': 'Поиск блюд...',
+                'all': 'Все',
+                'breakfast': 'Завтрак',
+                'lunch': 'Обед',
+                'dinner': 'Ужин',
+                'dessert': 'Десерты',
+                'add': 'Добавить в меню',
+                'added': 'Добавлено!',
+                'not-logged': 'Сначала войдите в систему!',
+                'added-to-diary': 'добавлено в дневник!',
+                'minutes': 'мин',
+                'kcal': 'ккал',
+                'copyright': 'Все права защищены.',
+                
+                // Названия блюд
+                'breakfast1-name': 'Яйца с тостами',
+                'breakfast1-desc': '2 яйца, цельнозерновой хлеб, авокадо, шпинат, томатный соус',
+                'breakfast2-name': 'Каша',
+                'breakfast2-desc': 'Овсянка, банан, ягоды, орехи, мед',
+                'breakfast3-name': 'Полезный смузи',
+                'breakfast3-desc': 'Банан, ягоды, молоко, семена чиа, мед',
+                'breakfast4-name': 'Йогурт парфе',
+                'breakfast4-desc': 'Греческий йогурт, гранола, ягоды, мед, орехи',
+                'breakfast5-name': 'Омлет с овощами',
+                'breakfast5-desc': '3 яйца, помидор, перец, лук, шпинат',
+                'breakfast6-name': 'Чиа пудинг',
+                'breakfast6-desc': 'Семена чиа, миндальное молоко, ваниль, ягоды',
+                'breakfast7-name': 'Французский тост',
+                'breakfast7-desc': 'Цельнозерновой хлеб, мед, ягоды, орехи',
+                'breakfast8-name': 'Блины',
+                'breakfast8-desc': 'Цельнозерновые блины, банан, ягоды, мед',
+                'breakfast9-name': 'Тофу скилет',
+                'breakfast9-desc': 'Тофу, помидор, лук, перец, шпинат',
+                'breakfast10-name': 'Мюсли',
+                'breakfast10-desc': 'Мюсли, миндальное молоко, банан, ягоды',
+                
+                'lunch1-name': 'Курица гриль',
+                'lunch1-desc': 'Куриная грудка, бурый рис, зеленый салат, помидор',
+                'lunch2-name': 'Лосось гриль',
+                'lunch2-desc': 'Филе лосося, киноа, лимонный соус, овощи',
+                'lunch3-name': 'Веган тарелка',
+                'lunch3-desc': 'Тофу, киноа, авокадо, эдамаме, кунжут',
+                'lunch4-name': 'Турция ролл',
+                'lunch4-desc': 'Тортилья, индейка, авокадо, шпинат, помидор',
+                'lunch5-name': 'Салат с киноа',
+                'lunch5-desc': 'Киноа, черная фасоль, помидор, авокадо, лимон',
+                'lunch6-name': 'Батат бургер',
+                'lunch6-desc': 'Котлета из батата, авокадо, шпинат, цельнозерновая булка',
+                'lunch7-name': 'Жаркое из курицы',
+                'lunch7-desc': 'Курица, брокколи, перец, соевый соус, рис',
+                'lunch8-name': 'Рыбные тако',
+                'lunch8-desc': 'Рыба гриль, тортилья, капуста, соус авокадо',
+                'lunch9-name': 'Веган лазанья',
+                'lunch9-desc': 'Грибы, шпинат, томатный соус, веган сыр',
+                'lunch10-name': 'Говяжий стейк',
+                'lunch10-desc': 'Стейк, картофель, спаржа, овощи гриль',
+                'lunch11-name': 'Салат с тунцом',
+                'lunch11-desc': 'Тунец, огурец, помидор, лук, майонез',
+                'lunch12-name': 'Тофу карри',
+                'lunch12-desc': 'Тофу, кокосовое молоко, карри, овощи, рис',
+                
+                'dinner1-name': 'Запеченная рыба',
+                'dinner1-desc': 'Филе рыбы, лимон, овощи, картофель',
+                'dinner2-name': 'Суп брокколи',
+                'dinner2-desc': 'Брокколи, картофель, сливки, специи',
+                'dinner3-name': 'Фаршированный перец',
+                'dinner3-desc': 'Перец, рис, овощи, сыр',
+                'dinner4-name': 'Жаркое из курицы',
+                'dinner4-desc': 'Курица, брокколи, перец, соевый соус',
+                'dinner5-name': 'Цукини паста',
+                'dinner5-desc': 'Цукини, песто, помидор, грибы',
+                'dinner6-name': 'Чечевица карри',
+                'dinner6-desc': 'Красная чечевица, кокосовое молоко, карри, рис',
+                'dinner7-name': 'Грибное ризотто',
+                'dinner7-desc': 'Рис арборио, грибы, пармезан',
+                'dinner8-name': 'Спагетти болоньезе',
+                'dinner8-desc': 'Спагетти, соус из говядины, пармезан',
+                'dinner9-name': 'Веган шашлык',
+                'dinner9-desc': 'Тофу, перец, лук, грибы, соевый соус',
+                'dinner10-name': 'Овощной шашлык',
+                'dinner10-desc': 'Перец, лук, цукини, грибы, соус',
+                
+                'dessert1-name': 'Чиа пудинг',
+                'dessert1-desc': 'Семена чиа, кокосовое молоко, ягоды, мед',
+                'dessert2-name': 'Фруктовый салат',
+                'dessert2-desc': 'Яблоко, банан, апельсин, виноград, ягоды',
+                'dessert3-name': 'Темный шоколад',
+                'dessert3-desc': '85% темный шоколад, миндаль, орехи',
+                'dessert4-name': 'Банан мороженое',
+                'dessert4-desc': 'Замороженный банан, арахисовое масло, шоколад',
+                
+                // Бейджи
+                'protein': 'Белок',
+                'vegan': 'Веган',
+                'fish': 'Рыба',
+                'low-cal': 'Низкокалорийно',
+                'probiotic': 'Пробиотики',
+                'sweet': 'Сладкое',
+                'light': 'Легкое',
+                'soup': 'Суп',
+                'chicken': 'Курица',
+                'mushroom': 'Грибы',
+                'italian': 'Итальянское',
+                'vitamin': 'Витамины',
+                'antioxidant': 'Антиоксиданты'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'login': 'Login',
+                'register': 'Register',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'about': 'About',
+                'dashboard': 'Dashboard',
+                'profile': 'Profile',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'menu-hero': 'Healthy Menu',
+                'menu-hero-text': 'Choose from 50+ healthy dishes',
+                'total': 'Total:',
+                'dishes': 'dishes',
+                'search': 'Search',
+                'search-placeholder': 'Search dishes...',
+                'all': 'All',
+                'breakfast': 'Breakfast',
+                'lunch': 'Lunch',
+                'dinner': 'Dinner',
+                'dessert': 'Desserts',
+                'add': 'Add to menu',
+                'added': 'Added!',
+                'not-logged': 'Please login first!',
+                'added-to-diary': 'added to diary!',
+                'minutes': 'min',
+                'kcal': 'kcal',
+                'copyright': 'All rights reserved.',
+                
+                // Dish names
+                'breakfast1-name': 'Eggs and Toast',
+                'breakfast1-desc': '2 eggs, whole grain bread, avocado, spinach, tomato sauce',
+                'breakfast2-name': 'Porridge',
+                'breakfast2-desc': 'Oatmeal, banana, berries, nuts, honey',
+                'breakfast3-name': 'Healthy Smoothie',
+                'breakfast3-desc': 'Banana, berries, milk, chia seeds, honey',
+                'breakfast4-name': 'Yogurt Parfait',
+                'breakfast4-desc': 'Greek yogurt, granola, berries, honey, nuts',
+                'breakfast5-name': 'Vegetable Omelette',
+                'breakfast5-desc': '3 eggs, tomato, pepper, onion, spinach',
+                'breakfast6-name': 'Chia Pudding',
+                'breakfast6-desc': 'Chia seeds, almond milk, vanilla, berries',
+                'breakfast7-name': 'French Toast',
+                'breakfast7-desc': 'Whole grain bread, honey, berries, nuts',
+                'breakfast8-name': 'Pancakes',
+                'breakfast8-desc': 'Whole grain pancakes, banana, berries, honey',
+                'breakfast9-name': 'Tofu Scramble',
+                'breakfast9-desc': 'Tofu, tomato, onion, pepper, spinach',
+                'breakfast10-name': 'Muesli',
+                'breakfast10-desc': 'Muesli, almond milk, banana, berries',
+                
+                'lunch1-name': 'Grilled Chicken',
+                'lunch1-desc': 'Chicken breast, brown rice, green salad, tomato',
+                'lunch2-name': 'Grilled Salmon',
+                'lunch2-desc': 'Salmon fillet, quinoa, lemon sauce, vegetables',
+                'lunch3-name': 'Vegan Bowl',
+                'lunch3-desc': 'Tofu, quinoa, avocado, edamame, sesame',
+                'lunch4-name': 'Turkey Wrap',
+                'lunch4-desc': 'Tortilla, turkey, avocado, spinach, tomato',
+                'lunch5-name': 'Quinoa Salad',
+                'lunch5-desc': 'Quinoa, black beans, tomato, avocado, lemon',
+                'lunch6-name': 'Sweet Potato Burger',
+                'lunch6-desc': 'Sweet potato patty, avocado, spinach, whole grain bun',
+                'lunch7-name': 'Chicken Stir-fry',
+                'lunch7-desc': 'Chicken, broccoli, pepper, soy sauce, rice',
+                'lunch8-name': 'Fish Tacos',
+                'lunch8-desc': 'Grilled fish, tortilla, cabbage, avocado sauce',
+                'lunch9-name': 'Vegan Lasagna',
+                'lunch9-desc': 'Mushrooms, spinach, tomato sauce, vegan cheese',
+                'lunch10-name': 'Beef Steak',
+                'lunch10-desc': 'Steak, potato, asparagus, grilled vegetables',
+                'lunch11-name': 'Tuna Salad',
+                'lunch11-desc': 'Tuna, cucumber, tomato, onion, mayonnaise',
+                'lunch12-name': 'Tofu Curry',
+                'lunch12-desc': 'Tofu, coconut milk, curry, vegetables, rice',
+                
+                'dinner1-name': 'Baked Fish',
+                'dinner1-desc': 'Fish fillet, lemon, vegetables, potato',
+                'dinner2-name': 'Broccoli Soup',
+                'dinner2-desc': 'Broccoli, potato, cream, spices',
+                'dinner3-name': 'Stuffed Peppers',
+                'dinner3-desc': 'Pepper, rice, vegetables, cheese',
+                'dinner4-name': 'Chicken Stir-fry',
+                'dinner4-desc': 'Chicken, broccoli, pepper, soy sauce',
+                'dinner5-name': 'Zucchini Pasta',
+                'dinner5-desc': 'Zucchini, pesto, tomato, mushrooms',
+                'dinner6-name': 'Lentil Curry',
+                'dinner6-desc': 'Red lentils, coconut milk, curry, rice',
+                'dinner7-name': 'Mushroom Risotto',
+                'dinner7-desc': 'Arborio rice, mushrooms, parmesan',
+                'dinner8-name': 'Spaghetti Bolognese',
+                'dinner8-desc': 'Spaghetti, beef sauce, parmesan',
+                'dinner9-name': 'Vegan Kebab',
+                'dinner9-desc': 'Tofu, pepper, onion, mushrooms, soy sauce',
+                'dinner10-name': 'Vegetable Kebab',
+                'dinner10-desc': 'Pepper, onion, zucchini, mushrooms, sauce',
+                
+                'dessert1-name': 'Chia Pudding',
+                'dessert1-desc': 'Chia seeds, coconut milk, berries, honey',
+                'dessert2-name': 'Fruit Salad',
+                'dessert2-desc': 'Apple, banana, orange, grapes, berries',
+                'dessert3-name': 'Dark Chocolate',
+                'dessert3-desc': '85% dark chocolate, almonds, nuts',
+                'dessert4-name': 'Banana Ice Cream',
+                'dessert4-desc': 'Frozen banana, peanut butter, chocolate',
+                
+                // Badges
+                'protein': 'Protein',
+                'vegan': 'Vegan',
+                'fish': 'Fish',
+                'low-cal': 'Low Calorie',
+                'probiotic': 'Probiotic',
+                'sweet': 'Sweet',
+                'light': 'Light',
+                'soup': 'Soup',
+                'chicken': 'Chicken',
+                'mushroom': 'Mushroom',
+                'italian': 'Italian',
+                'vitamin': 'Vitamins',
+                'antioxidant': 'Antioxidant'
+            }
+        };
+
+        // ============ ТІЛ АУЫСТЫРУ ============
+        function switchLanguage(lang) {
+            localStorage.setItem('preferred-language', lang);
+            document.documentElement.lang = lang;
+            
+            // Жалпы мәтіндерді ауыстыру
+            document.querySelectorAll('.lang-text').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Placeholder мәтіндерін ауыстыру
+            document.querySelectorAll('.lang-placeholder').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
+            // Категория атауларын ауыстыру
+            document.querySelectorAll('.cat-title').forEach(el => {
+                const cat = el.getAttribute('data-cat');
+                if (cat && translations[lang] && translations[lang][cat]) {
+                    el.textContent = translations[lang][cat];
+                }
+            });
+            
+            // Тағам атауларын ауыстыру
+            document.querySelectorAll('.dish-name').forEach(el => {
+                const key = el.getAttribute('data-dish');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Тағам сипаттамаларын ауыстыру
+            document.querySelectorAll('.dish-desc').forEach(el => {
+                const key = el.getAttribute('data-dish');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Бейдж мәтіндерін ауыстыру
+            document.querySelectorAll('.badge-text').forEach(el => {
+                const key = el.getAttribute('data-badge');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Тіл батырмаларын белгілеу
+            document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(lang)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+        }
+
+        // ============ ТЕМА АУЫСТЫРУ ============
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            
+            localStorage.setItem('preferred-theme', newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            const themeBtn = document.getElementById('themeMenuBtn');
+            const icon = themeBtn.querySelector('i');
+            
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                showToast('Қараңғы режим');
+            } else {
+                icon.className = 'fas fa-moon';
+                showToast('Жарық режим');
+            }
+        }
+
+        // ============ TOAST ============
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============ МЕНЮ ФУНКЦИЯЛАРЫ ============
+        function toggleMenu() {
+            document.getElementById('menuPanel').classList.toggle('active');
+            document.getElementById('menuOverlay').classList.toggle('active');
+            document.getElementById('burgerIcon').classList.toggle('active');
+            document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+        }
+
+        function closeMenu() {
+            document.getElementById('menuPanel').classList.remove('active');
+            document.getElementById('menuOverlay').classList.remove('active');
+            document.getElementById('burgerIcon').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ============ DASHBOARD-ҒА ҚОСУ ============
+        function addToDashboard(mealType, foodName, calories, button) {
+            const isLoggedIn = localStorage.getItem('menuCalories_isLoggedIn');
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            if (isLoggedIn !== 'true') {
+                showToast(translations[lang]['not-logged']);
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+                return;
+            }
+
+            let todayFoods = JSON.parse(localStorage.getItem('menuCalories_todayFoods'));
+            
+            if (!todayFoods || todayFoods.date !== new Date().toDateString()) {
+                todayFoods = {
+                    date: new Date().toDateString(),
+                    foods: {
+                        breakfast: [],
+                        lunch: [],
+                        dinner: [],
+                        snack: []
+                    }
+                };
+            }
+
+            const mealMap = {
+                'breakfast': 'breakfast',
+                'lunch': 'lunch',
+                'dinner': 'dinner',
+                'dessert': 'snack'
+            };
+
+            const targetMeal = mealMap[mealType] || 'snack';
+
+            const newFood = {
+                id: Date.now(),
+                name: foodName,
+                calories: calories,
+                time: new Date().toLocaleTimeString()
+            };
+
+            todayFoods.foods[targetMeal].push(newFood);
+            
+            localStorage.setItem('menuCalories_todayFoods', JSON.stringify(todayFoods));
+
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> ' + translations[lang]['added'];
+            button.classList.add('added');
+            
+            showToast(`"${foodName}" ${translations[lang]['added-to-diary']}`);
+            
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('added');
+            }, 2000);
+        }
+
+        // ============ ФИЛЬТР ============
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                
+                document.querySelectorAll('.menu-category-section').forEach(s => {
+                    if (category === 'all') {
+                        s.style.display = 'block';
+                    } else {
+                        s.style.display = s.id === category ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // ============ ІЗДЕУ ============
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            let count = 0;
+            
+            document.querySelectorAll('.menu-card').forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(term) || term === '') {
+                    card.style.display = 'block';
+                    card.closest('.menu-category-section').style.display = 'block';
+                    count++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('totalDishes').textContent = count;
+            
+            document.querySelectorAll('.menu-category-section').forEach(section => {
+                const visible = section.querySelectorAll('.menu-card[style*="block"]').length;
+                if (visible === 0 && term !== '') {
+                    section.style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        // ============ БАСТАПҚЫ ЖҮКТЕУ ============
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            switchLanguage(savedLang);
+            
+            if (savedTheme === 'dark') {
+                document.getElementById('themeMenuBtn').querySelector('i').className = 'fas fa-sun';
+            }
+            
+            document.getElementById('totalDishes').textContent = '40';
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeMenu();
+            });
+        });
+
+        window.addToDashboard = addToDashboard;
+        window.toggleMenu = toggleMenu;
+        window.closeMenu = closeMenu;
+        window.switchLanguage = switchLanguage;
+        window.toggleTheme = toggleTheme;
+    </script>
+</body>
+</html>

@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жүйеге кіру - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --button-success: #10b981;
+            --button-success-hover: #059669;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --button-success: #34d399;
+            --button-success-hover: #10b981;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            filter: drop-shadow(0 5px 10px rgba(255,255,255,0.3));
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: var(--error-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+            border-color: var(--button-primary);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .theme-menu-btn i {
+            font-size: 1.2rem;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= КІРУ БЕТІ ============= */
+        .auth-section {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: var(--bg-primary);
+        }
+
+        .auth-container {
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.6s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .auth-header h2 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 2rem;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* ============= ХАБАРЛАМАЛАР ============= */
+        .message {
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border-left-color: var(--error-color);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border-left-color: var(--success-color);
+        }
+
+        .message i {
+            margin-right: 10px;
+        }
+
+        /* ============= ФОРМА ============= */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid var(--input-border);
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--button-primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-control.error {
+            border-color: var(--error-color);
+            animation: shake 0.3s ease;
+        }
+
+        /* ============= ПАРОЛЬ КӨРСЕТУ ============= */
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle input {
+            padding-right: 60px;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 8px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            color: var(--button-primary);
+            background: var(--bg-secondary);
+        }
+
+        /* ============= ЕСТЕ САҚТАУ ЖӘНЕ ҰМЫТТЫМ ============= */
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--button-primary);
+        }
+
+        .forgot-password {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .forgot-password:hover {
+            color: var(--button-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* ============= КІРУ КНОПКАСЫ ============= */
+        .btn-login {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--button-success), var(--button-success-hover));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+        }
+
+        /* ============= ТІРКЕЛУ СІЛТЕМЕСІ ============= */
+        .auth-link {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .auth-link a {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-left: 5px;
+        }
+
+        .auth-link a:hover {
+            color: var(--button-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* ============= ТЕСТ ПАЙДАЛАНУШЫ ============= */
+        .test-user {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .test-user p {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-user span {
+            color: var(--button-primary);
+            font-weight: 600;
+        }
+
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.9;
+            margin: 8px 0;
+        }
+
+        .footer a {
+            color: var(--button-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--button-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid var(--success-color);
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        /* ============= МЕДИА СҰРАУЛАР ============= */
+        @media (max-width: 768px) {
+            .menu-panel { width: 100%; right: -100%; }
+            .auth-container { padding: 30px; margin: 0 20px; }
+            .logo h1 { font-size: 1.4rem; }
+            .remember-forgot { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .auth-container { padding: 25px; }
+            .auth-header h2 { font-size: 1.6rem; }
+            .btn-login { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Хедер -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            
+            <!-- Бургер-меню -->
+            <div class="burger-icon" id="burgerIcon" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Оверлей -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+    <!-- Меню панелі -->
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="closeMenu()">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="login.html" class="active"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+        </ul>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('en')">EN</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i>
+                <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Негізгі контент -->
+    <main class="main-content">
+        <section class="auth-section">
+            <div class="container">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <h2><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login-title">Жүйеге кіру</span></h2>
+                        <p class="lang-text" data-key="login-subtitle">Калорияларыңызды бақылау үшін кіріңіз</p>
+                    </div>
+                    
+                    <div class="message error-message" id="errorMessage">
+                        <i class="fas fa-exclamation-circle"></i> <span class="lang-text" data-key="login-error">Қате логин немесе пароль</span>
+                    </div>
+                    
+                    <div class="message success-message" id="successMessage">
+                        <i class="fas fa-check-circle"></i> <span class="lang-text" data-key="login-success">Кіру сәтті аяқталды!</span>
+                    </div>
+                    
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email" class="lang-text" data-key="email">Электронды пошта</label>
+                            <input type="email" id="email" class="form-control" required placeholder="email@example.com">
+                        </div>
+                        
+                        <div class="form-group password-toggle">
+                            <label for="password" class="lang-text" data-key="password">Пароль</label>
+                            <input type="password" id="password" class="form-control" required placeholder="••••••••">
+                            <button type="button" class="toggle-btn" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="remember-forgot">
+                            <label class="remember-me">
+                                <input type="checkbox" id="remember">
+                                <span class="lang-text" data-key="remember">Есте сақтау</span>
+                            </label>
+                            <a href="forgot-password.html" class="forgot-password lang-text" data-key="forgot">Парольді ұмыттыңыз ба?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn-login">
+                            <i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Жүйеге кіру</span>
+                        </button>
+                    </form>
+                    
+                    <div class="auth-link">
+                        <span class="lang-text" data-key="no-account">Тіркелмегенсіз бе?</span>
+                        <a href="register.html" class="lang-text" data-key="register">Тіркелу</a>
+                    </div>
+                    
+                    <!-- Тест пайдаланушы -->
+                    <div class="test-user">
+                        <p><i class="fas fa-info-circle"></i> <span class="lang-text" data-key="test-user">Тест пайдаланушы:</span></p>
+                        <p><span>Email:</span> test@example.com</p>
+                        <p><span class="lang-text" data-key="password">Пароль:</span> test123</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+            <p><span class="lang-text" data-key="contacts">Контакты</span>: <a href="mailto:info@menucalories.kz">info@menucalories.kz</a> | <a href="tel:+77088446082">+7 708 844 6082</a></p>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============ ТІЛДЕР ============
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'about': 'Біз туралы',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'login-title': 'Жүйеге кіру',
+                'login-subtitle': 'Калорияларыңызды бақылау үшін кіріңіз',
+                'email': 'Электронды пошта',
+                'password': 'Пароль',
+                'remember': 'Есте сақтау',
+                'forgot': 'Парольді ұмыттыңыз ба?',
+                'login-error': 'Қате логин немесе пароль',
+                'login-success': 'Кіру сәтті аяқталды!',
+                'no-account': 'Тіркелмегенсіз бе?',
+                'test-user': 'Тест пайдаланушы:',
+                'contacts': 'Контакты',
+                'copyright': 'Барлық құқықтар қорғалған.'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'about': 'О нас',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'login-title': 'Вход в систему',
+                'login-subtitle': 'Войдите, чтобы отслеживать калории',
+                'email': 'Электронная почта',
+                'password': 'Пароль',
+                'remember': 'Запомнить меня',
+                'forgot': 'Забыли пароль?',
+                'login-error': 'Неверный логин или пароль',
+                'login-success': 'Вход выполнен успешно!',
+                'no-account': 'Нет аккаунта?',
+                'test-user': 'Тестовый пользователь:',
+                'contacts': 'Контакты',
+                'copyright': 'Все права защищены.'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'login': 'Login',
+                'register': 'Register',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'about': 'About',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'login-title': 'Login',
+                'login-subtitle': 'Login to track your calories',
+                'email': 'Email',
+                'password': 'Password',
+                'remember': 'Remember me',
+                'forgot': 'Forgot password?',
+                'login-error': 'Invalid email or password',
+                'login-success': 'Login successful!',
+                'no-account': 'Don\'t have an account?',
+                'test-user': 'Test user:',
+                'contacts': 'Contacts',
+                'copyright': 'All rights reserved.'
+            }
+        };
+
+        // ============ LOCALSTORAGE КІЛТТЕРІ ============
+        const STORAGE_KEYS = {
+            USERS_DB: 'menuCalories_usersDB',
+            IS_LOGGED_IN: 'menuCalories_isLoggedIn',
+            CURRENT_USER: 'menuCalories_currentUser',
+            USER_DATA: 'menuCalories_userData',
+            HEALTH_DATA: 'menuCalories_healthData'
+        };
+
+        // ============ ТІЛ АУЫСТЫРУ ============
+        function switchLanguage(lang) {
+            localStorage.setItem('preferred-language', lang);
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('.lang-text').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            document.querySelectorAll('.lang-placeholder').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
+            document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(lang)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeBtn = document.getElementById('themeMenuBtn');
+            const themeIcon = themeBtn.querySelector('i');
+            const themeText = themeBtn.querySelector('span');
+            
+            if (currentTheme === 'dark') {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = translations[lang]['dark-mode'].replace('Қараңғы', 'Жарық').replace('Темный', 'Светлый').replace('Dark', 'Light');
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = translations[lang]['dark-mode'];
+            }
+
+            showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+        }
+
+        // ============ ТЕМА АУЫСТЫРУ ============
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            localStorage.setItem('preferred-theme', newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            const themeBtn = document.getElementById('themeMenuBtn');
+            const icon = themeBtn.querySelector('i');
+            const text = themeBtn.querySelector('span');
+            
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = translations[lang]['dark-mode'].replace('Қараңғы', 'Жарық').replace('Темный', 'Светлый').replace('Dark', 'Light');
+                showToast('Қараңғы режим');
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = translations[lang]['dark-mode'];
+                showToast('Жарық режим');
+            }
+        }
+
+        // ============ TOAST ============
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============ МЕНЮ ФУНКЦИЯЛАРЫ ============
+        function toggleMenu() {
+            document.getElementById('menuPanel').classList.toggle('active');
+            document.getElementById('menuOverlay').classList.toggle('active');
+            document.getElementById('burgerIcon').classList.toggle('active');
+            document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+        }
+
+        function closeMenu() {
+            document.getElementById('menuPanel').classList.remove('active');
+            document.getElementById('menuOverlay').classList.remove('active');
+            document.getElementById('burgerIcon').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ============ ПАРОЛЬДІ КӨРСЕТУ/ЖАСЫРУ ============
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // ============ КІРУ ФОРМАСЫ ============
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Хабарламаларды жасыру
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Бос өрістерді тексеру
+            if (!email || !password) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('email').classList.add('error');
+                document.getElementById('password').classList.add('error');
+                
+                setTimeout(() => {
+                    document.getElementById('email').classList.remove('error');
+                    document.getElementById('password').classList.remove('error');
+                }, 1000);
+                return;
+            }
+            
+            // Тіркелген пайдаланушыларды тексеру
+            const usersDB = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS_DB)) || [];
+            
+            // Тест пайдаланушы
+            if (email === 'test@example.com' && password === 'test123') {
+                document.getElementById('successMessage').style.display = 'block';
+                
+                localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
+                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
+                    email: 'test@example.com',
+                    fullname: 'Тест Пайдаланушы'
+                }));
+                
+                if (remember) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('lastEmail', email);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('lastEmail');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                return;
+            }
+            
+            // Пайдаланушыны табу
+            const user = usersDB.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                document.getElementById('successMessage').style.display = 'block';
+                
+                localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
+                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
+                    email: user.email,
+                    fullname: user.fullname
+                }));
+                
+                localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify({
+                    fullname: user.fullname,
+                    email: user.email,
+                    registerDate: user.registerDate
+                }));
+                
+                if (user.healthData) {
+                    localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, JSON.stringify(user.healthData));
+                }
+                
+                if (remember) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('lastEmail', email);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('lastEmail');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('email').classList.add('error');
+                document.getElementById('password').classList.add('error');
+                
+                setTimeout(() => {
+                    document.getElementById('email').classList.remove('error');
+                    document.getElementById('password').classList.remove('error');
+                }, 1000);
+            }
+        });
+
+        // ============ АВТОТОЛТЫРУ ============
+        document.addEventListener('DOMContentLoaded', function() {
+            // Сақталған тілді жүктеу
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            switchLanguage(savedLang);
+            
+            // Сақталған теманы жүктеу
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Тема кнопкасын орнату
+            const themeBtn = document.getElementById('themeMenuBtn');
+            if (savedTheme === 'dark') {
+                themeBtn.querySelector('i').className = 'fas fa-sun';
+            }
+            
+            // Есте сақталған email
+            if (localStorage.getItem('rememberMe') === 'true') {
+                const lastEmail = localStorage.getItem('lastEmail');
+                if (lastEmail) {
+                    document.getElementById('email').value = lastEmail;
+                    document.getElementById('remember').checked = true;
+                }
+            }
+            
+            document.getElementById('email').focus();
+            
+            // Егер пайдаланушы кірген болса
+            if (localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN) === 'true') {
+                window.location.href = 'dashboard.html';
+            }
+            
+            // Escape батырмасы
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тіркелу - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            filter: drop-shadow(0 5px 10px rgba(255,255,255,0.3));
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+            border-color: var(--button-primary);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .theme-menu-btn i {
+            font-size: 1.2rem;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= РЕГИСТРАЦИЯ ============= */
+        .auth-section {
+            padding: 60px 0;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            background: var(--bg-primary);
+        }
+        
+        .auth-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            padding: 50px;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.6s ease;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-header h2 {
+            color: var(--text-primary);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 2;
+            background: var(--card-bg);
+            padding: 0 10px;
+        }
+        
+        .step.active {
+            color: var(--button-primary);
+            font-weight: 600;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .step.active .step-number {
+            background: var(--button-primary);
+            border-color: var(--button-primary);
+            color: white;
+        }
+        
+        .auth-form .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .auth-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .auth-form input[type="text"],
+        .auth-form input[type="email"],
+        .auth-form input[type="password"],
+        .auth-form input[type="number"],
+        .auth-form select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--input-border);
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        
+        .auth-form input:focus,
+        .auth-form select:focus {
+            border-color: var(--button-primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .password-match-status {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding-left: 5px;
+        }
+        
+        .match-success {
+            color: #10b981;
+        }
+        
+        .match-error {
+            color: #ef4444;
+        }
+        
+        .terms-group {
+            margin-bottom: 30px;
+        }
+        
+        .checkbox-label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--button-primary);
+        }
+        
+        .checkbox-label a {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .auth-footer {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .auth-footer a {
+            color: var(--button-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .input-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.9;
+            margin: 8px 0;
+        }
+
+        .footer a {
+            color: var(--button-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--button-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid #10b981;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        /* ============= МЕДИА СҰРАУЛАР ============= */
+        @media (max-width: 768px) {
+            .menu-panel { width: 100%; right: -100%; }
+            .auth-container { padding: 30px; margin: 0 20px; }
+            .logo h1 { font-size: 1.4rem; }
+            .step-indicator { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 480px) {
+            .auth-container { padding: 25px; }
+            .step-number { width: 28px; height: 28px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Хедер -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            
+            <!-- Бургер-меню -->
+            <div class="burger-icon" id="burgerIcon" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Оверлей -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+    <!-- Меню панелі -->
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="closeMenu()">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html" class="active"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+        </ul>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="switchLanguage('en')">EN</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i>
+                <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Негізгі контент -->
+    <main class="main-content">
+        <section class="auth-section">
+            <div class="container">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <h2 class="lang-text" data-key="register">Тіркелу</h2>
+                        <p class="lang-text" data-key="register-subtitle">Денсаулық сапарыңызды бастаңыз</p>
+                    </div>
+                    
+                    <div class="step-indicator">
+                        <div class="step active" id="step1-indicator">
+                            <div class="step-number">1</div>
+                            <span class="lang-text" data-key="personal-info">Жеке ақпарат</span>
+                        </div>
+                        <div class="step" id="step2-indicator">
+                            <div class="step-number">2</div>
+                            <span class="lang-text" data-key="body-params">Дене параметрлері</span>
+                        </div>
+                        <div class="step" id="step3-indicator">
+                            <div class="step-number">3</div>
+                            <span class="lang-text" data-key="agreement">Келісім</span>
+                        </div>
+                    </div>
+                    
+                    <form class="auth-form" id="registerForm">
+                        <!-- 1-қадам: Жеке ақпарат -->
+                        <div id="step1">
+                            <div class="form-group">
+                                <label for="fullname" class="lang-text" data-key="fullname">Толық аты-жөніңіз</label>
+                                <input type="text" id="fullname" name="fullname" class="lang-placeholder" data-key="fullname-placeholder" placeholder="Мысалы: Салтанат Омарова" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="lang-text" data-key="email">Электронды пошта</label>
+                                <input type="email" id="email" name="email" class="lang-placeholder" data-key="email-placeholder" placeholder="s.menukz@gmail.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password" class="lang-text" data-key="password">Құпия сөз</label>
+                                <input type="password" id="password" name="password" class="lang-placeholder" data-key="password-placeholder" placeholder="Кемінде 8 символ" required oninput="checkPasswordMatch()">
+                                <div class="input-hint">
+                                    <i class="fas fa-info-circle"></i> <span class="lang-text" data-key="password-hint">Кемінде 8 символ, 1 әріп және 1 сан</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirm_password" class="lang-text" data-key="confirm-password">Құпия сөзді растау</label>
+                                <input type="password" id="confirm_password" name="confirm_password" class="lang-placeholder" data-key="confirm-placeholder" placeholder="Құпия сөзді қайта енгізіңіз" required oninput="checkPasswordMatch()">
+                                <div id="passwordMatchMessage" class="password-match-status"></div>
+                            </div>
+                            
+                            <button type="button" class="auth-btn" onclick="validateAndGoToStep2()">
+                                <span class="lang-text" data-key="next">Келесі</span> →
+                            </button>
+                        </div>
+                        
+                        <!-- 2-қадам: Дене параметрлері -->
+                        <div id="step2" style="display: none;">
+                            <div class="form-group">
+                                <label for="age" class="lang-text" data-key="age">Жасыңыз</label>
+                                <input type="number" id="age" name="age" class="lang-placeholder" data-key="age-placeholder" placeholder="Мысалы: 28" min="1" max="120">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gender" class="lang-text" data-key="gender">Жынысыңыз</label>
+                                <select id="gender" name="gender">
+                                    <option value="" class="lang-text" data-key="select">Таңдаңыз</option>
+                                    <option value="female" class="lang-text" data-key="female">Әйел</option>
+                                    <option value="male" class="lang-text" data-key="male">Ер</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="height" class="lang-text" data-key="height">Бойыңыз (см)</label>
+                                <input type="number" id="height" name="height" class="lang-placeholder" data-key="height-placeholder" placeholder="Мысалы: 165" min="100" max="250">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="weight" class="lang-text" data-key="weight">Салмағыңыз (кг)</label>
+                                <input type="number" id="weight" name="weight" class="lang-placeholder" data-key="weight-placeholder" placeholder="Мысалы: 60" min="30" max="300" step="0.1">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="goal" class="lang-text" data-key="goal">Мақсатыңыз</label>
+                                <select id="goal" name="goal">
+                                    <option value="" class="lang-text" data-key="select">Таңдаңыз</option>
+                                    <option value="lose" class="lang-text" data-key="goal-lose">Салмақ жоғалту</option>
+                                    <option value="maintain" class="lang-text" data-key="goal-maintain">Салмақты сақтау</option>
+                                    <option value="gain" class="lang-text" data-key="goal-gain">Салмақ қосу</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="auth-btn" style="background: #94a3b8;" onclick="goToStep(1)">← <span class="lang-text" data-key="back">Артқа</span></button>
+                                <button type="button" class="auth-btn" onclick="validateAndGoToStep3()"><span class="lang-text" data-key="next">Келесі</span> →</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 3-қадам: Келісім және тіркелу -->
+                        <div id="step3" style="display: none;">
+                            <div class="form-group">
+                                <label class="lang-text" data-key="your-info">Сіздің мағлұматыңыз</label>
+                                <div style="background-color: var(--bg-secondary); padding: 25px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+                                    <div id="summary" style="color: var(--text-primary); line-height: 1.8;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group terms-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="terms" name="terms" required>
+                                    <span><span class="lang-text" data-key="accept">Мен</span> <a href="#" target="_blank" class="lang-text" data-key="terms">пайдаланушы шарттарын</a> <span class="lang-text" data-key="accept-end">қабылдаймын</span></span>
+                                </label>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="auth-btn" style="background: #94a3b8;" onclick="goToStep(2)">← <span class="lang-text" data-key="back">Артқа</span></button>
+                                <button type="submit" class="auth-btn"><span class="lang-text" data-key="register">Тіркелу</span></button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="auth-footer">
+                        <p><span class="lang-text" data-key="has-account">Аккаунтыңыз бар ма?</span> <a href="login.html" class="lang-text" data-key="login">Кіру</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+            <p><span class="lang-text" data-key="contacts">Контакты</span>: <a href="mailto:info@menucalories.kz">info@menucalories.kz</a> | <a href="tel:+77088446082">+7 708 844 6082</a></p>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============ ТІЛДЕР ============
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'about': 'Біз туралы',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'register-subtitle': 'Денсаулық сапарыңызды бастаңыз',
+                'personal-info': 'Жеке ақпарат',
+                'body-params': 'Дене параметрлері',
+                'agreement': 'Келісім',
+                'fullname': 'Толық аты-жөніңіз',
+                'fullname-placeholder': 'Мысалы: Салтанат Омарова',
+                'email': 'Электронды пошта',
+                'email-placeholder': 's.menukz@gmail.com',
+                'password': 'Құпия сөз',
+                'password-placeholder': 'Кемінде 8 символ',
+                'password-hint': 'Кемінде 8 символ, 1 әріп және 1 сан',
+                'confirm-password': 'Құпия сөзді растау',
+                'confirm-placeholder': 'Құпия сөзді қайта енгізіңіз',
+                'next': 'Келесі',
+                'back': 'Артқа',
+                'age': 'Жасыңыз',
+                'age-placeholder': 'Мысалы: 28',
+                'gender': 'Жынысыңыз',
+                'select': 'Таңдаңыз',
+                'female': 'Әйел',
+                'male': 'Ер',
+                'height': 'Бойыңыз (см)',
+                'height-placeholder': 'Мысалы: 165',
+                'weight': 'Салмағыңыз (кг)',
+                'weight-placeholder': 'Мысалы: 60',
+                'goal': 'Мақсатыңыз',
+                'goal-lose': 'Салмақ жоғалту',
+                'goal-maintain': 'Салмақты сақтау',
+                'goal-gain': 'Салмақ қосу',
+                'your-info': 'Сіздің мағлұматыңыз',
+                'accept': 'Мен',
+                'terms': 'пайдаланушы шарттарын',
+                'accept-end': 'қабылдаймын',
+                'has-account': 'Аккаунтыңыз бар ма?',
+                'contacts': 'Контакты',
+                'copyright': 'Барлық құқықтар қорғалған.'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'about': 'О нас',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'register-subtitle': 'Начните свой путь к здоровью',
+                'personal-info': 'Личная информация',
+                'body-params': 'Параметры тела',
+                'agreement': 'Согласие',
+                'fullname': 'Полное имя',
+                'fullname-placeholder': 'Например: Салтанат Омарова',
+                'email': 'Электронная почта',
+                'email-placeholder': 's.menukz@gmail.com',
+                'password': 'Пароль',
+                'password-placeholder': 'Минимум 8 символов',
+                'password-hint': 'Минимум 8 символов, 1 буква и 1 цифра',
+                'confirm-password': 'Подтверждение пароля',
+                'confirm-placeholder': 'Повторите пароль',
+                'next': 'Далее',
+                'back': 'Назад',
+                'age': 'Ваш возраст',
+                'age-placeholder': 'Например: 28',
+                'gender': 'Ваш пол',
+                'select': 'Выберите',
+                'female': 'Женщина',
+                'male': 'Мужчина',
+                'height': 'Рост (см)',
+                'height-placeholder': 'Например: 165',
+                'weight': 'Вес (кг)',
+                'weight-placeholder': 'Например: 60',
+                'goal': 'Ваша цель',
+                'goal-lose': 'Похудеть',
+                'goal-maintain': 'Поддерживать вес',
+                'goal-gain': 'Набрать вес',
+                'your-info': 'Ваша информация',
+                'accept': 'Я',
+                'terms': 'пользовательское соглашение',
+                'accept-end': 'принимаю',
+                'has-account': 'Уже есть аккаунт?',
+                'contacts': 'Контакты',
+                'copyright': 'Все права защищены.'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'login': 'Login',
+                'register': 'Register',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'about': 'About',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'register-subtitle': 'Start your health journey',
+                'personal-info': 'Personal Info',
+                'body-params': 'Body Parameters',
+                'agreement': 'Agreement',
+                'fullname': 'Full name',
+                'fullname-placeholder': 'Example: Saltanat Omarova',
+                'email': 'Email',
+                'email-placeholder': 's.menukz@gmail.com',
+                'password': 'Password',
+                'password-placeholder': 'Minimum 8 characters',
+                'password-hint': 'Minimum 8 characters, 1 letter and 1 number',
+                'confirm-password': 'Confirm password',
+                'confirm-placeholder': 'Re-enter password',
+                'next': 'Next',
+                'back': 'Back',
+                'age': 'Age',
+                'age-placeholder': 'Example: 28',
+                'gender': 'Gender',
+                'select': 'Select',
+                'female': 'Female',
+                'male': 'Male',
+                'height': 'Height (cm)',
+                'height-placeholder': 'Example: 165',
+                'weight': 'Weight (kg)',
+                'weight-placeholder': 'Example: 60',
+                'goal': 'Your goal',
+                'goal-lose': 'Lose weight',
+                'goal-maintain': 'Maintain weight',
+                'goal-gain': 'Gain weight',
+                'your-info': 'Your information',
+                'accept': 'I',
+                'terms': 'terms of use',
+                'accept-end': 'accept',
+                'has-account': 'Already have an account?',
+                'contacts': 'Contacts',
+                'copyright': 'All rights reserved.'
+            }
+        };
+
+        // ============ LOCALSTORAGE КІЛТТЕРІ ============
+        const STORAGE_KEYS = {
+            USER_DATA: 'menuCalories_userData',
+            HEALTH_DATA: 'menuCalories_healthData',
+            USERS_DB: 'menuCalories_usersDB',
+            IS_LOGGED_IN: 'menuCalories_isLoggedIn',
+            CURRENT_USER: 'menuCalories_currentUser'
+        };
+
+        // ============ ТІЛ АУЫСТЫРУ ============
+        function switchLanguage(lang) {
+            localStorage.setItem('preferred-language', lang);
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('.lang-text').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            document.querySelectorAll('.lang-placeholder').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (key && translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
+            document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(lang)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Тема кнопкасын жаңарту
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeBtn = document.getElementById('themeMenuBtn');
+            const themeIcon = themeBtn.querySelector('i');
+            const themeText = themeBtn.querySelector('span');
+            
+            if (currentTheme === 'dark') {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = translations[lang]['dark-mode'].replace('Қараңғы', 'Жарық').replace('Темный', 'Светлый').replace('Dark', 'Light');
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = translations[lang]['dark-mode'];
+            }
+
+            showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+        }
+
+        // ============ ТЕМА АУЫСТЫРУ ============
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            localStorage.setItem('preferred-theme', newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            const themeBtn = document.getElementById('themeMenuBtn');
+            const icon = themeBtn.querySelector('i');
+            const text = themeBtn.querySelector('span');
+            
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = translations[lang]['dark-mode'].replace('Қараңғы', 'Жарық').replace('Темный', 'Светлый').replace('Dark', 'Light');
+                showToast('Қараңғы режим');
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = translations[lang]['dark-mode'];
+                showToast('Жарық режим');
+            }
+        }
+
+        // ============ TOAST ============
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============ МЕНЮ ФУНКЦИЯЛАРЫ ============
+        function toggleMenu() {
+            document.getElementById('menuPanel').classList.toggle('active');
+            document.getElementById('menuOverlay').classList.toggle('active');
+            document.getElementById('burgerIcon').classList.toggle('active');
+            document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+        }
+
+        function closeMenu() {
+            document.getElementById('menuPanel').classList.remove('active');
+            document.getElementById('menuOverlay').classList.remove('active');
+            document.getElementById('burgerIcon').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ============ РЕГИСТРАЦИЯ ФУНКЦИЯЛАРЫ ============
+        
+        function goToStep(step) {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'none';
+            document.getElementById('step' + step).style.display = 'block';
+            updateStepIndicator(step);
+        }
+        
+        function updateStepIndicator(activeStep) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById('step' + i + '-indicator');
+                if (i === activeStep) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            }
+        }
+        
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const messageDiv = document.getElementById('passwordMatchMessage');
+            
+            if (confirmPassword.length === 0) {
+                messageDiv.innerHTML = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Құпия сөздер сәйкес келеді';
+                messageDiv.className = 'password-match-status match-success';
+            } else {
+                messageDiv.innerHTML = '<i class="fas fa-times-circle"></i> Құпия сөздер сәйкес келмейді';
+                messageDiv.className = 'password-match-status match-error';
+            }
+        }
+        
+        function validateAndGoToStep2() {
+            const fullname = document.getElementById('fullname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (!fullname) {
+                showToast('Аты-жөніңізді енгізіңіз!');
+                return;
+            }
+            
+            if (!email) {
+                showToast('Электронды поштаңызды енгізіңіз!');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Жарамды электронды пошта енгізіңіз!');
+                return;
+            }
+            
+            const usersDB = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS_DB)) || [];
+            const userExists = usersDB.some(user => user.email === email);
+            
+            if (userExists) {
+                showToast('Бұл электронды пошта бұрын тіркелген!');
+                return;
+            }
+            
+            if (!password) {
+                showToast('Құпия сөзді енгізіңіз!');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showToast('Құпия сөз кемінде 8 символ болуы керек!');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Құпия сөздер сәйкес келмейді!');
+                return;
+            }
+            
+            goToStep(2);
+        }
+        
+        function validateAndGoToStep3() {
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').value;
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const goal = document.getElementById('goal').value;
+            
+            if (!age) {
+                showToast('Жасыңызды енгізіңіз!');
+                return;
+            }
+            
+            if (!gender) {
+                showToast('Жынысыңызды таңдаңыз!');
+                return;
+            }
+            
+            if (!height) {
+                showToast('Бойыңызды енгізіңіз!');
+                return;
+            }
+            
+            if (!weight) {
+                showToast('Салмағыңызды енгізіңіз!');
+                return;
+            }
+            
+            if (!goal) {
+                showToast('Мақсатыңызды таңдаңыз!');
+                return;
+            }
+            
+            updateSummary();
+            goToStep(3);
+        }
+        
+        function updateSummary() {
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').value;
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const goal = document.getElementById('goal').value;
+            
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            
+            let genderText = gender === 'female' 
+                ? translations[lang]['female'] 
+                : translations[lang]['male'];
+            
+            let goalText = '';
+            switch(goal) {
+                case 'lose': goalText = translations[lang]['goal-lose']; break;
+                case 'maintain': goalText = translations[lang]['goal-maintain']; break;
+                case 'gain': goalText = translations[lang]['goal-gain']; break;
+            }
+            
+            let bmi = '';
+            if (height && weight) {
+                const bmiValue = (weight / ((height/100) * (height/100))).toFixed(1);
+                bmi = `<br><i class="fas fa-heartbeat"></i> BMI: ${bmiValue}`;
+            }
+            
+            document.getElementById('summary').innerHTML = `
+                <p><strong><i class="fas fa-user"></i> ${fullname}</strong></p>
+                <p><i class="fas fa-envelope"></i> ${email}</p>
+                <p><i class="fas fa-birthday-cake"></i> ${translations[lang]['age']}: ${age}, ${translations[lang]['gender']}: ${genderText}</p>
+                <p><i class="fas fa-arrows-alt-v"></i> ${translations[lang]['height']}: ${height} см, <i class="fas fa-weight-scale"></i> ${translations[lang]['weight']}: ${weight} кг${bmi}</p>
+                <p><i class="fas fa-bullseye"></i> ${translations[lang]['goal']}: <strong>${goalText}</strong></p>
+            `;
+        }
+        
+        function registerUser() {
+            const userData = {
+                fullname: document.getElementById('fullname').value.trim(),
+                email: document.getElementById('email').value.trim().toLowerCase(),
+                password: document.getElementById('password').value,
+                registerDate: new Date().toLocaleDateString('kk-KZ', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                id: 'user_' + Date.now()
+            };
+            
+            const healthData = {
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                targetWeight: calculateTargetWeight(document.getElementById('weight').value, document.getElementById('goal').value),
+                goal: document.getElementById('goal').value,
+                activity: '1.375',
+                startWeight: document.getElementById('weight').value
+            };
+            
+            let usersDB = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS_DB)) || [];
+            
+            usersDB.push({
+                ...userData,
+                healthData: healthData
+            });
+            
+            localStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(usersDB));
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+            localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, JSON.stringify(healthData));
+            
+            const calorieData = calculateCalories(healthData);
+            localStorage.setItem('menuCalories_calorieData', JSON.stringify(calorieData));
+            
+            localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
+                email: userData.email,
+                fullname: userData.fullname
+            }));
+            
+            return true;
+        }
+        
+        function calculateTargetWeight(currentWeight, goal) {
+            currentWeight = parseFloat(currentWeight) || 60;
+            
+            if (goal === 'lose') {
+                return (currentWeight - 5).toFixed(1);
+            } else if (goal === 'gain') {
+                return (currentWeight + 3).toFixed(1);
+            } else {
+                return currentWeight.toFixed(1);
+            }
+        }
+        
+        function calculateCalories(healthData) {
+            const weight = parseFloat(healthData.weight) || 60;
+            const height = parseFloat(healthData.height) || 165;
+            const age = parseFloat(healthData.age) || 25;
+            const activity = parseFloat(healthData.activity) || 1.375;
+            const gender = healthData.gender || 'female';
+            const goal = healthData.goal || 'maintain';
+            
+            let bmr;
+            if (gender === 'female') {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            }
+            
+            let dailyCalories = Math.round(bmr * activity);
+            
+            if (goal === 'lose') {
+                dailyCalories -= 500;
+            } else if (goal === 'gain') {
+                dailyCalories += 300;
+            }
+            
+            return {
+                limit: dailyCalories,
+                consumed: 0,
+                burned: 0,
+                date: new Date().toISOString()
+            };
+        }
+        
+        // ============ ФОРМАНЫ ЖІБЕРУ ============
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!document.getElementById('terms').checked) {
+                showToast('Пайдалану шарттарын қабылдауыңыз керек!');
+                return;
+            }
+            
+            const success = registerUser();
+            
+            if (success) {
+                showToast('Сәтті тіркелдіңіз!');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }
+        });
+
+        // ============ БАСТАПҚЫ ЖҮКТЕУ ============
+        document.addEventListener('DOMContentLoaded', function() {
+            // Сақталған тілді жүктеу
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            switchLanguage(savedLang);
+            
+            // Сақталған теманы жүктеу
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Тема кнопкасын орнату
+            const themeBtn = document.getElementById('themeMenuBtn');
+            if (savedTheme === 'dark') {
+                themeBtn.querySelector('i').className = 'fas fa-sun';
+            }
+            
+            // 1-қадамды көрсету
+            goToStep(1);
+            
+            // Escape батырмасы
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
