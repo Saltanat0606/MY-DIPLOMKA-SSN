@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Профиль - Menu & Calories</title>
+    <!-- ============= PWA СІЛТЕМЕЛЕРІ ============= -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuCal">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="/img/icon-152x152.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============= ТЕМАЛАР ============= */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+            --header-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #f8fafc;
+            --button-primary: #6366f1;
+            --button-primary-hover: #4f46e5;
+            --button-success: #10b981;
+            --button-success-hover: #059669;
+            --button-info: #3b82f6;
+            --button-danger: #ef4444;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --modal-bg: #ffffff;
+            --shadow-color: rgba(99, 102, 241, 0.1);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --card-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+            --header-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --header-text: #ffffff;
+            --footer-bg: #020617;
+            --footer-text: #f8fafc;
+            --button-primary: #818cf8;
+            --button-primary-hover: #6366f1;
+            --button-success: #34d399;
+            --button-success-hover: #10b981;
+            --button-info: #60a5fa;
+            --button-danger: #f87171;
+            --input-bg: #334155;
+            --input-border: #475569;
+            --modal-bg: #1e293b;
+            --shadow-color: rgba(0,0,0,0.5);
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ============= АНИМАЦИЯЛАР ============= */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ============= ХЕДЕР ============= */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ============= БУРГЕР-МЕНЮ ============= */
+        .burger-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .burger-icon:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .burger-icon span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .burger-icon.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+            width: 28px;
+        }
+
+        .burger-icon.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .burger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            width: 28px;
+        }
+
+        /* ============= МЕНЮ ПАНЕЛІ ============= */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 380px;
+            height: 100vh;
+            background: var(--modal-bg);
+            box-shadow: -10px 0 40px var(--shadow-color);
+            z-index: 1000;
+            transition: right 0.5s ease;
+            overflow-y: auto;
+            padding: 28px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .menu-panel-header h3 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-menu {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .close-menu:hover {
+            background: var(--error-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .menu-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 16px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-list li a i {
+            width: 24px;
+            color: var(--button-primary);
+            font-size: 1.2rem;
+        }
+
+        .menu-list li a:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transform: translateX(8px);
+        }
+
+        .menu-list li a.active {
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+        }
+
+        .menu-list li a.active i {
+            color: white;
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+            padding: 0 4px;
+        }
+
+        .menu-section h4 {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lang-menu-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--button-primary);
+            background: transparent;
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .lang-menu-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .lang-menu-btn.active {
+            background: var(--button-primary);
+            color: white;
+        }
+
+        .theme-menu-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .theme-menu-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ============= PAGE HEADER ============= */
+        .page-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 40px 0;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: 40px;
+        }
+
+        .page-header .container {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .profile-avatar {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .avatar-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            border: 3px solid white;
+            backdrop-filter: blur(5px);
+        }
+
+        .change-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: white;
+            color: #10b981;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+            transition: var(--transition);
+        }
+
+        .change-avatar:hover {
+            transform: scale(1.1);
+            background: #10b981;
+            color: white;
+        }
+
+        .profile-title h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        .profile-title p {
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        /* ============= ПРОФИЛЬ КОНТЕНТІ ============= */
+        .profile-section {
+            padding: 20px 0 60px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* ============= ИНФО КАРТОЧКАЛАР ============= */
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            animation: scaleIn 0.6s ease;
+        }
+
+        .info-card h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .info-card h2 i {
+            color: var(--button-primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            transition: var(--transition);
+        }
+
+        .info-item:hover {
+            transform: translateX(5px);
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        /* ============= ФОРМА ============= */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 16px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--button-primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99,102,241,0.4);
+        }
+
+        /* ============= МАҚСАТТАР ============= */
+        .goals-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            animation: scaleIn 0.6s ease 0.2s both;
+        }
+
+        .goals-card h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .goals-card h2 i {
+            color: var(--button-primary);
+        }
+
+        .goal-item {
+            margin-bottom: 25px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .goal-header strong {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .goal-header span {
+            color: var(--button-primary);
+            font-weight: 600;
+        }
+
+        .goal-progress {
+            height: 10px;
+            background: var(--bg-secondary);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--button-primary), var(--button-success));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* ============= ҚАУІПТІ АЙМАҚ ============= */
+        .danger-zone {
+            background: rgba(239,68,68,0.1);
+            border: 2px solid var(--error-color);
+            border-radius: 24px;
+            padding: 30px;
+            margin-top: 30px;
+            animation: fadeIn 0.6s ease 0.4s both;
+        }
+
+        .danger-zone h3 {
+            color: var(--error-color);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .danger-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(239,68,68,0.3);
+        }
+
+        /* ============= ХАБАРЛАМА ============= */
+        .success-message {
+            background: var(--success-color);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 60px;
+            margin-bottom: 30px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 10px 25px rgba(16,185,129,0.3);
+        }
+
+        .success-message.show {
+            display: flex;
+        }
+
+        .success-message i {
+            font-size: 1.2rem;
+        }
+
+        /* ============= ФУТЕР ============= */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--footer-text);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--button-primary);
+        }
+
+        .footer p {
+            opacity: 0.8;
+        }
+
+        /* ============= TOAST ============= */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--modal-bg);
+            color: var(--text-primary);
+            padding: 14px 30px;
+            border-radius: 60px;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.5s;
+            border-left: 4px solid var(--success-color);
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ============= МОБИЛЬДІ АДАПТАЦИЯ ============= */
+        @media (max-width: 1024px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .menu-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .page-header .container {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .profile-title {
+                text-align: center;
+            }
+            
+            .profile-title p {
+                justify-content: center;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+            
+            .logo i {
+                font-size: 1.6rem;
+            }
+            
+            .burger-icon {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .info-card {
+                padding: 20px;
+            }
+            
+            .info-card h2 {
+                font-size: 1.3rem;
+            }
+            
+            .goal-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .btn-danger {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .toast {
+                width: 90%;
+                text-align: center;
+                font-size: 0.9rem;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1 class="lang-text" data-key="site-title">Menu & Calories</h1>
+            </div>
+            <div class="burger-icon" id="burgerIcon" onclick="AIFunctions.toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="AIFunctions.closeMenu()"></div>
+
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-panel-header">
+            <h3><i class="fas fa-bars"></i> <span class="lang-text" data-key="menu-title">Меню</span></h3>
+            <div class="close-menu" onclick="AIFunctions.closeMenu()"><i class="fas fa-times"></i></div>
+        </div>
+        <ul class="menu-list">
+            <li><a href="../index.html"><i class="fas fa-home"></i> <span class="lang-text" data-key="home">Басты бет</span></a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> <span class="lang-text" data-key="about">Біз туралы</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-blog"></i> <span class="lang-text" data-key="blog">Блог</span></a></li>
+            <li><a href="contact.html"><i class="fas fa-address-book"></i> <span class="lang-text" data-key="contact">Байланыс</span></a></li>
+            <li><a href="menu.html"><i class="fas fa-utensils"></i> <span class="lang-text" data-key="menu">Мәзір</span></a></li>
+            <li><a href="calories.html"><i class="fas fa-fire"></i> <span class="lang-text" data-key="calories">Калория</span></a></li>
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> <span class="lang-text" data-key="dashboard">Бақылау</span></a></li>
+            <li><a href="profile.html" class="active"><i class="fas fa-user"></i> <span class="lang-text" data-key="profile">Профиль</span></a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="lang-text" data-key="login">Кіру</span></a></li>
+            <li><a href="register.html"><i class="fas fa-user-plus"></i> <span class="lang-text" data-key="register">Тіркелу</span></a></li>
+        </ul>
+        <div class="menu-section">
+            <h4><i class="fas fa-globe"></i> <span class="lang-text" data-key="language">Тіл</span></h4>
+            <div class="language-buttons">
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('kk')">KZ</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('ru')">RU</button>
+                <button class="lang-menu-btn" onclick="AIFunctions.switchLanguage('en')">EN</button>
+            </div>
+        </div>
+        <div class="menu-section">
+            <h4><i class="fas fa-palette"></i> <span class="lang-text" data-key="theme">Тема</span></h4>
+            <button class="theme-menu-btn" onclick="AIFunctions.toggleTheme()" id="themeMenuBtn">
+                <i class="fas fa-moon"></i> <span class="lang-text" data-key="dark-mode">Қараңғы режим</span>
+            </button>
+        </div>
+    </div>
+
+    <section class="page-header">
+        <div class="container">
+            <div class="profile-avatar">
+                <div class="avatar-img" id="avatarIcon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="change-avatar" title="Аватарды өзгерту" onclick="changeAvatar()">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+            
+            <div class="profile-title" id="profileHeader">
+                <h1 id="profileName">Сеймұхан Салтанат</h1>
+                <p><i class="fas fa-envelope"></i> <span id="profileEmail">sms_006@email.kz</span></p>
+                <p><i class="fas fa-calendar"></i> <span class="lang-text" data-key="registered">Тіркелген</span>: <span id="profileDate">10 Қаңтар 2026</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <div class="container">
+            <!-- Хабарлама -->
+            <div id="successMessage" class="success-message">
+                <i class="fas fa-check-circle"></i> <span class="lang-text" data-key="saved">Өзгерістер сәтті сақталды!</span>
+            </div>
+            
+            <div class="profile-grid">
+                <!-- Сол жақ баған: Жеке ақпарат және денсаулық параметрлері -->
+                <div>
+                    <!-- Жеке ақпарат карточкасы -->
+                    <div class="info-card">
+                        <h2><i class="fas fa-user-circle"></i> <span class="lang-text" data-key="personal-info">Жеке ақпарат</span></h2>
+                        
+                        <div class="info-grid" id="personalInfo">
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-user"></i> <span class="lang-text" data-key="fullname">Аты-жөні</span></div>
+                                <div class="info-value" id="displayName">Сеймұхан Салтанат</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-envelope"></i> <span class="lang-text" data-key="email">Электронды пошта</span></div>
+                                <div class="info-value" id="displayEmail">sms_006@email.kz</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-venus-mars"></i> <span class="lang-text" data-key="gender">Жынысы</span></div>
+                                <div class="info-value" id="displayGender">Әйел</div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-birthday-cake"></i> <span class="lang-text" data-key="age">Жасы</span></div>
+                                <div class="info-value" id="displayAge">18 жас</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Денсаулық параметрлері -->
+                    <div class="info-card">
+                        <h2><i class="fas fa-heartbeat"></i> <span class="lang-text" data-key="health-params">Денсаулық параметрлері</span></h2>
+                        
+                        <form id="healthForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="height"><span class="lang-text" data-key="height">Бой (см)</span></label>
+                                    <input type="number" id="height" class="form-control" min="100" max="250" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="weight"><span class="lang-text" data-key="current-weight">Ағымдағы салмақ (кг)</span></label>
+                                    <input type="number" id="weight" class="form-control" min="30" max="200" step="0.1" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="targetWeight"><span class="lang-text" data-key="target-weight">Мақсатты салмақ (кг)</span></label>
+                                    <input type="number" id="targetWeight" class="form-control" min="30" max="200" step="0.1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="goal"><span class="lang-text" data-key="goal">Мақсат</span></label>
+                                    <select id="goal" class="form-control">
+                                        <option value="lose" class="lang-text" data-key="goal-lose">Салмақ азайту</option>
+                                        <option value="maintain" class="lang-text" data-key="goal-maintain">Салмақты сақтау</option>
+                                        <option value="gain" class="lang-text" data-key="goal-gain">Салмақ қосу</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-save"></i> <span class="lang-text" data-key="save-changes">Өзгерістерді сақтау</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Оң жақ баған: Мақсаттар және қауіпті аймақ -->
+                <div>
+                    <!-- Мақсаттар карточкасы -->
+                    <div class="goals-card">
+                        <h2><i class="fas fa-bullseye"></i> <span class="lang-text" data-key="my-goals">Мақсаттарым</span></h2>
+                        
+                        <div id="goalsContainer">
+                            <div class="goal-item">
+                                <div class="goal-header">
+                                    <strong><span class="lang-text" data-key="weight-goal">Салмақ мақсаты</span></strong>
+                                    <span id="goalWeightText">68.5 кг → 63.0 кг</span>
+                                </div>
+                                <div class="goal-progress">
+                                    <div id="weightProgress" class="goal-progress-fill" style="width: 60%;"></div>
+                                </div>
+                                <div class="goal-text" id="goalProgressText">60% орындалды</div>
+                            </div>
+                            
+                            <div class="goal-item">
+                                <div class="goal-header">
+                                    <strong><span class="lang-text" data-key="daily-steps">Күнделікті қадам</span></strong>
+                                    <span>7,500 / 10,000</span>
+                                </div>
+                                <div class="goal-progress">
+                                    <div class="goal-progress-fill" style="width: 75%;"></div>
+                                </div>
+                                <div class="goal-text">75% орындалды</div>
+                            </div>
+                            
+                            <div class="goal-item">
+                                <div class="goal-header">
+                                    <strong><span class="lang-text" data-key="daily-water">Су ішу</span></strong>
+                                    <span>1.8 / 2.0 л</span>
+                                </div>
+                                <div class="goal-progress">
+                                    <div class="goal-progress-fill" style="width: 90%;"></div>
+                                </div>
+                                <div class="goal-text">90% орындалды</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Қауіпті аймақ -->
+                    <div class="danger-zone">
+                        <h3><i class="fas fa-exclamation-triangle"></i> <span class="lang-text" data-key="danger-zone">Қауіпті аймақ</span></h3>
+                        <p><span class="lang-text" data-key="danger-text">Бұл әрекеттерді қайтару мүмкін емес</span></p>
+                        <button class="btn-danger" id="deleteAccountBtn">
+                            <i class="fas fa-trash"></i> <span class="lang-text" data-key="delete-account">Аккаунтты жою</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="about.html" class="lang-text" data-key="about">Біз туралы</a>
+                <a href="blog.html" class="lang-text" data-key="blog">Блог</a>
+                <a href="contact.html" class="lang-text" data-key="contact">Байланыс</a>
+                <a href="menu.html" class="lang-text" data-key="menu">Мәзір</a>
+                <a href="calories.html" class="lang-text" data-key="calories">Калория</a>
+                <a href="dashboard.html" class="lang-text" data-key="dashboard">Бақылау</a>
+                <a href="profile.html" class="lang-text" data-key="profile">Профиль</a>
+                <a href="login.html" class="lang-text" data-key="login">Кіру</a>
+                <a href="register.html" class="lang-text" data-key="register">Тіркелу</a>
+            </div>
+            <p>&copy; 2026 <span class="lang-text" data-key="site-title">Menu & Calories</span>. <span class="lang-text" data-key="copyright">Барлық құқықтар қорғалған.</span></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const translations = {
+            kk: {
+                'site-title': 'Menu & Calories',
+                'home': 'Басты бет',
+                'about': 'Біз туралы',
+                'blog': 'Блог',
+                'contact': 'Байланыс',
+                'menu': 'Мәзір',
+                'calories': 'Калория',
+                'dashboard': 'Бақылау',
+                'profile': 'Профиль',
+                'login': 'Кіру',
+                'register': 'Тіркелу',
+                'menu-title': 'Меню',
+                'language': 'Тіл',
+                'theme': 'Тема',
+                'dark-mode': 'Қараңғы режим',
+                'registered': 'Тіркелген',
+                'personal-info': 'Жеке ақпарат',
+                'fullname': 'Аты-жөні',
+                'email': 'Электронды пошта',
+                'gender': 'Жынысы',
+                'age': 'Жасы',
+                'female': 'Әйел',
+                'male': 'Ер',
+                'health-params': 'Денсаулық параметрлері',
+                'height': 'Бой (см)',
+                'current-weight': 'Ағымдағы салмақ (кг)',
+                'target-weight': 'Мақсатты салмақ (кг)',
+                'goal': 'Мақсат',
+                'goal-lose': 'Салмақ азайту',
+                'goal-maintain': 'Салмақты сақтау',
+                'goal-gain': 'Салмақ қосу',
+                'save-changes': 'Өзгерістерді сақтау',
+                'saved': 'Өзгерістер сәтті сақталды!',
+                'my-goals': 'Мақсаттарым',
+                'weight-goal': 'Салмақ мақсаты',
+                'daily-steps': 'Күнделікті қадам',
+                'daily-water': 'Су ішу',
+                'danger-zone': 'Қауіпті аймақ',
+                'danger-text': 'Бұл әрекеттерді қайтару мүмкін емес',
+                'delete-account': 'Аккаунтты жою',
+                'copyright': 'Барлық құқықтар қорғалған.'
+            },
+            ru: {
+                'site-title': 'Menu & Calories',
+                'home': 'Главная',
+                'about': 'О нас',
+                'blog': 'Блог',
+                'contact': 'Контакты',
+                'menu': 'Меню',
+                'calories': 'Калории',
+                'dashboard': 'Панель',
+                'profile': 'Профиль',
+                'login': 'Вход',
+                'register': 'Регистрация',
+                'menu-title': 'Меню',
+                'language': 'Язык',
+                'theme': 'Тема',
+                'dark-mode': 'Темный режим',
+                'registered': 'Зарегистрирован',
+                'personal-info': 'Личная информация',
+                'fullname': 'Полное имя',
+                'email': 'Электронная почта',
+                'gender': 'Пол',
+                'age': 'Возраст',
+                'female': 'Женщина',
+                'male': 'Мужчина',
+                'health-params': 'Параметры здоровья',
+                'height': 'Рост (см)',
+                'current-weight': 'Текущий вес (кг)',
+                'target-weight': 'Целевой вес (кг)',
+                'goal': 'Цель',
+                'goal-lose': 'Похудеть',
+                'goal-maintain': 'Поддерживать вес',
+                'goal-gain': 'Набрать вес',
+                'save-changes': 'Сохранить изменения',
+                'saved': 'Изменения успешно сохранены!',
+                'my-goals': 'Мои цели',
+                'weight-goal': 'Цель по весу',
+                'daily-steps': 'Ежедневные шаги',
+                'daily-water': 'Питье воды',
+                'danger-zone': 'Опасная зона',
+                'danger-text': 'Эти действия невозможно отменить',
+                'delete-account': 'Удалить аккаунт',
+                'copyright': 'Все права защищены.'
+            },
+            en: {
+                'site-title': 'Menu & Calories',
+                'home': 'Home',
+                'about': 'About',
+                'blog': 'Blog',
+                'contact': 'Contact',
+                'menu': 'Menu',
+                'calories': 'Calories',
+                'dashboard': 'Dashboard',
+                'profile': 'Profile',
+                'login': 'Login',
+                'register': 'Register',
+                'menu-title': 'Menu',
+                'language': 'Language',
+                'theme': 'Theme',
+                'dark-mode': 'Dark mode',
+                'registered': 'Registered',
+                'personal-info': 'Personal Info',
+                'fullname': 'Full name',
+                'email': 'Email',
+                'gender': 'Gender',
+                'age': 'Age',
+                'female': 'Female',
+                'male': 'Male',
+                'health-params': 'Health parameters',
+                'height': 'Height (cm)',
+                'current-weight': 'Current weight (kg)',
+                'target-weight': 'Target weight (kg)',
+                'goal': 'Goal',
+                'goal-lose': 'Lose weight',
+                'goal-maintain': 'Maintain weight',
+                'goal-gain': 'Gain weight',
+                'save-changes': 'Save changes',
+                'saved': 'Changes saved successfully!',
+                'my-goals': 'My goals',
+                'weight-goal': 'Weight goal',
+                'daily-steps': 'Daily steps',
+                'daily-water': 'Water intake',
+                'danger-zone': 'Danger zone',
+                'danger-text': 'These actions cannot be undone',
+                'delete-account': 'Delete account',
+                'copyright': 'All rights reserved.'
+            }
+        };
+
+        const STORAGE_KEYS = {
+            USER_DATA: 'menuCalories_userData',
+            HEALTH_DATA: 'menuCalories_healthData',
+            SETTINGS: 'menuCalories_settings',
+            IS_LOGGED_IN: 'menuCalories_isLoggedIn'
+        };
+
+        const AIFunctions = {
+            toggleMenu: function() {
+                document.getElementById('menuPanel').classList.toggle('active');
+                document.getElementById('menuOverlay').classList.toggle('active');
+                document.getElementById('burgerIcon').classList.toggle('active');
+                document.body.style.overflow = document.body.style.overflow === 'hidden' ? 'auto' : 'hidden';
+            },
+
+            closeMenu: function() {
+                document.getElementById('menuPanel').classList.remove('active');
+                document.getElementById('menuOverlay').classList.remove('active');
+                document.getElementById('burgerIcon').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            },
+
+            switchLanguage: function(lang) {
+                localStorage.setItem('preferred-language', lang);
+                document.documentElement.lang = lang;
+                
+                document.querySelectorAll('.lang-text').forEach(el => {
+                    const key = el.getAttribute('data-key');
+                    if (key && translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                document.querySelectorAll('.lang-menu-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(lang)) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                this.showToast(translations[lang]['language'] + ' ' + lang.toUpperCase());
+            },
+
+            toggleTheme: function() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const newTheme = current === 'dark' ? 'light' : 'dark';
+                
+                localStorage.setItem('preferred-theme', newTheme);
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                const themeBtn = document.getElementById('themeMenuBtn');
+                const icon = themeBtn.querySelector('i');
+                
+                if (newTheme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                    this.showToast('Қараңғы режим');
+                } else {
+                    icon.className = 'fas fa-moon';
+                    this.showToast('Жарық режим');
+                }
+            },
+
+            showToast: function(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        };
+
+        // === ПАЙДАЛАНУШЫ КІРГЕНІН ТЕКСЕРУ ===
+        function checkAuth() {
+            if (localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN) !== 'true') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // === ПРОФИЛЬ ДЕРЕКТЕРІН ЖҮКТЕУ ===
+        function loadProfileData() {
+            const userData = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DATA)) || {
+                fullname: 'Сеймұхан Салтанат',
+                email: 'sms_006@email.kz',
+                registerDate: new Date().toLocaleDateString('kk-KZ', { year: 'numeric', month: 'long', day: 'numeric' })
+            };
+            
+            const healthData = JSON.parse(localStorage.getItem(STORAGE_KEYS.HEALTH_DATA)) || {
+                age: '18',
+                gender: 'female',
+                height: '168',
+                weight: '65.5',
+                targetWeight: '58',
+                goal: 'lose'
+            };
+            
+            // Хедерді жаңарту
+            document.getElementById('profileName').textContent = userData.fullname || 'Сеймұхан Салтанат';
+            document.getElementById('profileEmail').textContent = userData.email || 'sms_006@email.kz';
+            document.getElementById('profileDate').textContent = userData.registerDate || '10 Қаңтар 2026';
+            
+            // Жеке ақпаратты жаңарту
+            document.getElementById('displayName').textContent = userData.fullname || 'Сеймұхан Салтанат';
+            document.getElementById('displayEmail').textContent = userData.email || 'sms_006@email.kz';
+            
+            const genderText = healthData.gender === 'female' ? 
+                (localStorage.getItem('preferred-language') === 'ru' ? 'Женщина' : 
+                 localStorage.getItem('preferred-language') === 'en' ? 'Female' : 'Әйел') : 
+                (localStorage.getItem('preferred-language') === 'ru' ? 'Мужчина' : 
+                 localStorage.getItem('preferred-language') === 'en' ? 'Male' : 'Ер');
+            document.getElementById('displayGender').textContent = genderText;
+            document.getElementById('displayAge').textContent = (healthData.age || '18') + ' жас';
+            
+            // Форманы толтыру
+            document.getElementById('height').value = healthData.height || '168';
+            document.getElementById('weight').value = healthData.weight || '65.5';
+            document.getElementById('targetWeight').value = healthData.targetWeight || '58';
+            document.getElementById('goal').value = healthData.goal || 'lose';
+            
+            // Мақсаттарды жаңарту
+            updateGoalsDisplay(healthData);
+        }
+
+        // === МАҚСАТТАРДЫ ЖАҢАРТУ ===
+        function updateGoalsDisplay(healthData) {
+            const currentWeight = parseFloat(healthData.weight) || 65.5;
+            const targetWeight = parseFloat(healthData.targetWeight) || 58;
+            const startWeight = parseFloat(healthData.startWeight) || (currentWeight + 3.5);
+            
+            if (!healthData.startWeight) {
+                healthData.startWeight = startWeight;
+                localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, JSON.stringify(healthData));
+            }
+            
+            document.getElementById('goalWeightText').textContent = `${startWeight.toFixed(1)} кг → ${targetWeight.toFixed(1)} кг`;
+            
+            const totalLoss = startWeight - targetWeight;
+            const currentLoss = startWeight - currentWeight;
+            let progressPercent = 0;
+            
+            if (totalLoss > 0) {
+                progressPercent = Math.min(100, Math.max(0, (currentLoss / totalLoss) * 100));
+            }
+            
+            document.getElementById('weightProgress').style.width = `${progressPercent}%`;
+            document.getElementById('goalProgressText').textContent = `${Math.round(progressPercent)}% орындалды`;
+        }
+
+        // === ДЕРЕКТЕРДІ САҚТАУ ===
+        document.getElementById('healthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const healthData = JSON.parse(localStorage.getItem(STORAGE_KEYS.HEALTH_DATA)) || {};
+            
+            healthData.height = document.getElementById('height').value;
+            healthData.weight = document.getElementById('weight').value;
+            healthData.targetWeight = document.getElementById('targetWeight').value;
+            healthData.goal = document.getElementById('goal').value;
+            
+            localStorage.setItem(STORAGE_KEYS.HEALTH_DATA, JSON.stringify(healthData));
+            
+            updateGoalsDisplay(healthData);
+            
+            document.getElementById('successMessage').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('successMessage').classList.remove('show');
+            }, 3000);
+            
+            // Калорияны есептеу
+            calculateDailyCalories(healthData);
+        });
+
+        // === КАЛОРИЯНЫ ЕСЕПТЕУ ===
+        function calculateDailyCalories(healthData) {
+            const weight = parseFloat(healthData.weight) || 65.5;
+            const height = parseFloat(healthData.height) || 168;
+            const age = parseFloat(healthData.age) || 28;
+            const gender = healthData.gender || 'female';
+            
+            let bmr = gender === 'female' 
+                ? 10 * weight + 6.25 * height - 5 * age - 161
+                : 10 * weight + 6.25 * height - 5 * age + 5;
+            
+            let dailyCalories = Math.round(bmr * 1.375);
+            
+            if (healthData.goal === 'lose') dailyCalories -= 500;
+            else if (healthData.goal === 'gain') dailyCalories += 300;
+            
+            const calorieData = {
+                limit: dailyCalories,
+                consumed: 0,
+                remaining: dailyCalories,
+                burned: 0,
+                date: new Date().toISOString()
+            };
+            
+            localStorage.setItem('menuCalories_calorieData', JSON.stringify(calorieData));
+        }
+
+        // === АВАТАРДЫ ӨЗГЕРТУ ===
+        window.changeAvatar = function() {
+            AIFunctions.showToast('Аватарды өзгерту функциясы әзірленуде');
+        };
+
+        // === АККАУНТТЫ ЖОЮ ===
+        document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+            const lang = localStorage.getItem('preferred-language') || 'kk';
+            const confirmMsg = lang === 'kk' ? 'Сіз шынымен аккаунтыңызды жойғыңыз келе ме? Бұл әрекетті қайтару мүмкін емес.' :
+                              lang === 'ru' ? 'Вы действительно хотите удалить аккаунт? Это действие нельзя отменить.' :
+                              'Are you sure you want to delete your account? This action cannot be undone.';
+            
+            if (confirm(confirmMsg)) {
+                localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+                localStorage.removeItem(STORAGE_KEYS.HEALTH_DATA);
+                localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+                localStorage.removeItem('menuCalories_calorieData');
+                localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'false');
+                
+                AIFunctions.showToast(lang === 'kk' ? 'Аккаунт жойылды' : lang === 'ru' ? 'Аккаунт удален' : 'Account deleted');
+                setTimeout(() => window.location.href = '../index.html', 1000);
+            }
+        });
+
+        // === БЕТ ЖҮКТЕЛГЕНДЕ ===
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            const savedLang = localStorage.getItem('preferred-language') || 'kk';
+            const savedTheme = localStorage.getItem('preferred-theme') || 'light';
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            AIFunctions.switchLanguage(savedLang);
+            
+            if (savedTheme === 'dark') {
+                document.getElementById('themeMenuBtn').querySelector('i').className = 'fas fa-sun';
+            }
+            
+            loadProfileData();
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    AIFunctions.closeMenu();
+                }
+            });
+        });
+
+        window.AIFunctions = AIFunctions;
+    </script>
+</body>
+</html>
